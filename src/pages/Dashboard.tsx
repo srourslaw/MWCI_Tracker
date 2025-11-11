@@ -17,6 +17,7 @@ import {
 import { taskService } from '../services/taskService'
 import { Task, TaskInput } from '../types/task'
 import TaskModal from '../components/TaskModal'
+import { getTeamMemberName } from '../data/teamMembers'
 
 export default function Dashboard() {
   const { user, logout } = useAuth()
@@ -143,7 +144,7 @@ export default function Dashboard() {
           className="mb-8"
         >
           <h2 className="text-3xl font-bold text-slate-800 mb-2">
-            Welcome back, {user?.email?.split('@')[0]}!
+            Welcome back, {user?.email ? getTeamMemberName(user.email) : 'User'}!
           </h2>
           <p className="text-slate-600">Here's what's happening with your projects today.</p>
         </motion.div>

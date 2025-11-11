@@ -15,6 +15,8 @@ import {
 } from 'lucide-react'
 import { taskService } from '../services/taskService'
 import { Task } from '../types/task'
+import { getTeamMemberName, TEAM_MEMBERS } from '../data/teamMembers'
+import TeamDirectory from '../components/TeamDirectory'
 
 interface TeamMember {
   email: string
@@ -93,15 +95,15 @@ export default function AdminDashboard() {
   }
 
   const statsDisplay = [
-    { label: 'Team Members', value: stats.teamMembers.toString(), icon: Users, color: 'from-blue-500 to-cyan-500' },
-    { label: 'Active Projects', value: stats.activeProjects.toString(), icon: Activity, color: 'from-purple-500 to-pink-500' },
+    { label: 'Team Members', value: TEAM_MEMBERS.length.toString(), icon: Users, color: 'from-blue-500 to-cyan-500' },
+    { label: 'Active Users', value: stats.teamMembers.toString(), icon: Activity, color: 'from-purple-500 to-pink-500' },
     { label: 'Total Tasks', value: stats.totalTasks.toString(), icon: CheckSquare, color: 'from-green-500 to-emerald-500' },
     { label: 'Completion Rate', value: stats.completionRate, icon: TrendingUp, color: 'from-orange-500 to-red-500' },
   ]
 
   // Recent activities from all tasks
   const recentActivities = allTasks.slice(0, 5).map(task => ({
-    user: task.userEmail.split('@')[0],
+    user: getTeamMemberName(task.userEmail),
     action: task.status === 'completed' ? 'completed task' : task.status === 'in-progress' ? 'is working on' : 'created task',
     task: task.title,
     time: new Date(task.updatedAt).toLocaleString(),
@@ -209,7 +211,7 @@ export default function AdminDashboard() {
                   >
                     <div className="flex items-center justify-between">
                       <div>
-                        <h4 className="text-slate-800 font-semibold">{member.email.split('@')[0]}</h4>
+                        <h4 className="text-slate-800 font-semibold">{getTeamMemberName(member.email)}</h4>
                         <p className="text-slate-600 text-sm">{member.email}</p>
                       </div>
                       <div className="text-right">
@@ -287,6 +289,16 @@ export default function AdminDashboard() {
             )}
           </motion.div>
         </div>
+
+        {/* Team Directory Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6 }}
+          className="mt-8"
+        >
+          <TeamDirectory />
+        </motion.div>
       </main>
     </div>
   )
