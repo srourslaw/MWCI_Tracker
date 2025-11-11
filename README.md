@@ -7,9 +7,12 @@ A stunning project management dashboard built with React, TypeScript, and Fireba
 - Multi-user authentication with company email validation (@thakralone.com)
 - Role-based access control (Admin & Regular Users)
 - Beautiful, modern UI with animations
-- Real-time task tracking
-- Admin dashboard for team oversight
-- Secure Firebase authentication
+- **Real-time task tracking with Firestore** - Create, edit, delete tasks
+- **Live updates** - Changes sync instantly across all devices
+- Admin dashboard for team oversight with real-time statistics
+- Secure Firebase authentication and Firestore security rules
+- Task status management (Pending, In Progress, Completed)
+- Individual user dashboards showing personal tasks and stats
 
 ## Tech Stack
 
@@ -61,6 +64,7 @@ npm run dev
 3. Enable Authentication with Email/Password
 4. Enable Cloud Firestore
 5. Copy your Firebase config to `.env` file
+6. **IMPORTANT**: Set up Firestore security rules (see `FIRESTORE_SETUP.md`)
 
 ## Deployment
 
@@ -73,34 +77,41 @@ This project is configured for Vercel deployment:
 
 ## User Roles
 
-### Admin
-- Email: hussein.srour@thakralone.com
+### Admin (hussein.srour@thakralone.com)
 - Full access to all features
-- Team member overview
-- Activity monitoring
-- System statistics
+- View all team members' tasks
+- Real-time team statistics and activity monitoring
+- System-wide analytics
+- Team member performance tracking
 
 ### Regular Users
 - Company email required (@thakralone.com)
-- Personal dashboard
-- Task management
-- Progress tracking
+- Personal dashboard with individual statistics
+- Create, edit, and delete own tasks
+- Real-time task status updates
+- Progress tracking with visual indicators
+- **Privacy**: Can only see and manage their own tasks
 
 ## Project Structure
 
 ```
 src/
-├── components/      # Reusable components
-├── context/         # React context (Auth)
-├── hooks/          # Custom hooks
-├── pages/          # Page components
+├── components/          # Reusable components
+│   └── TaskModal.tsx   # Task create/edit modal
+├── context/            # React context (Auth)
+├── hooks/              # Custom hooks
+├── pages/              # Page components
 │   ├── LoginPage.tsx
 │   ├── RegisterPage.tsx
-│   ├── Dashboard.tsx
-│   └── AdminDashboard.tsx
-├── firebase.ts     # Firebase configuration
-├── App.tsx         # Main app component
-└── main.tsx        # Entry point
+│   ├── Dashboard.tsx        # User dashboard
+│   └── AdminDashboard.tsx   # Admin dashboard
+├── services/           # Business logic
+│   └── taskService.ts  # Firestore task operations
+├── types/              # TypeScript types
+│   └── task.ts        # Task interfaces
+├── firebase.ts         # Firebase configuration
+├── App.tsx            # Main app component
+└── main.tsx           # Entry point
 ```
 
 ## Available Scripts

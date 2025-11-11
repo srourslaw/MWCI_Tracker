@@ -1,0 +1,45 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Helper function to check if user owns the resource
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Helper function to check if user is admin
+    function isAdmin() {
+      return isAuthenticated() && request.auth.token.email == 'hussein.srour@thakralone.com';
+    }
+
+    // Helper function to check if email is from allowed domain
+    function hasValidEmail() {
+      return isAuthenticated() && request.auth.token.email.matches('.*@thakralone.com$');
+    }
+
+    // Tasks collection rules
+    match /tasks/{taskId} {
+      // Allow read if user owns the task OR user is admin
+      allow read: if isOwner(resource.data.userId) || isAdmin();
+
+      // Allow create if user is authenticated and has valid company email
+      allow create: if hasValidEmail()
+                    && request.resource.data.userId == request.auth.uid
+                    && request.resource.data.userEmail == request.auth.token.email;
+
+      // Allow update if user owns the task
+      allow update: if isOwner(resource.data.userId)
+                    && request.resource.data.userId == resource.data.userId
+                    && request.resource.data.userEmail == resource.data.userEmail;
+
+      // Allow delete if user owns the task
+      allow delete: if isOwner(resource.data.userId);
+    }
+  }
+}

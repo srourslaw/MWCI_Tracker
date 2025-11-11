@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '../hooks/useAuth'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
@@ -13,15 +13,75 @@ import {
   BarChart3,
   Calendar
 } from 'lucide-react'
+import { taskService } from '../services/taskService'
+import { Task } from '../types/task'
+
+interface TeamMember {
+  email: string
+  tasks: number
+  completed: number
+}
 
 export default function AdminDashboard() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
-  const [teamMembers] = useState([
-    { id: 1, name: 'John Doe', email: 'john.doe@thakralone.com', tasks: 12, completed: 8 },
-    { id: 2, name: 'Jane Smith', email: 'jane.smith@thakralone.com', tasks: 15, completed: 10 },
-    { id: 3, name: 'Mike Johnson', email: 'mike.johnson@thakralone.com', tasks: 10, completed: 7 },
-  ])
+  const [allTasks, setAllTasks] = useState<Task[]>([])
+  const [loading, setLoading] = useState(true)
+  const [stats, setStats] = useState({
+    teamMembers: 0,
+    activeProjects: 0,
+    totalTasks: 0,
+    completionRate: '0%',
+  })
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([])
+
+  useEffect(() => {
+    // Subscribe to all tasks
+    const unsubscribe = taskService.subscribeToAllTasks(
+      (tasks) => {
+        setAllTasks(tasks)
+        setLoading(false)
+
+        // Calculate stats
+        const uniqueUsers = new Set(tasks.map(t => t.userEmail))
+        const completed = tasks.filter(t => t.status === 'completed').length
+        const completionRate = tasks.length > 0
+          ? `${Math.round((completed / tasks.length) * 100)}%`
+          : '0%'
+
+        setStats({
+          teamMembers: uniqueUsers.size,
+          activeProjects: Math.ceil(uniqueUsers.size / 2),
+          totalTasks: tasks.length,
+          completionRate,
+        })
+
+        // Calculate team member stats
+        const memberStats = new Map<string, { tasks: number; completed: number }>()
+        tasks.forEach(task => {
+          const current = memberStats.get(task.userEmail) || { tasks: 0, completed: 0 }
+          memberStats.set(task.userEmail, {
+            tasks: current.tasks + 1,
+            completed: current.completed + (task.status === 'completed' ? 1 : 0),
+          })
+        })
+
+        const members: TeamMember[] = Array.from(memberStats.entries()).map(([email, data]) => ({
+          email,
+          tasks: data.tasks,
+          completed: data.completed,
+        }))
+
+        setTeamMembers(members)
+      },
+      (error) => {
+        console.error('Error loading all tasks:', error)
+        setLoading(false)
+      }
+    )
+
+    return () => unsubscribe()
+  }, [])
 
   const handleLogout = async () => {
     try {
@@ -32,12 +92,20 @@ export default function AdminDashboard() {
     }
   }
 
-  const stats = [
-    { label: 'Team Members', value: '12', icon: Users, color: 'from-blue-500 to-cyan-500' },
-    { label: 'Active Projects', value: '5', icon: Activity, color: 'from-purple-500 to-pink-500' },
-    { label: 'Total Tasks', value: '156', icon: CheckSquare, color: 'from-green-500 to-emerald-500' },
-    { label: 'Completion Rate', value: '78%', icon: TrendingUp, color: 'from-orange-500 to-red-500' },
+  const statsDisplay = [
+    { label: 'Team Members', value: stats.teamMembers.toString(), icon: Users, color: 'from-blue-500 to-cyan-500' },
+    { label: 'Active Projects', value: stats.activeProjects.toString(), icon: Activity, color: 'from-purple-500 to-pink-500' },
+    { label: 'Total Tasks', value: stats.totalTasks.toString(), icon: CheckSquare, color: 'from-green-500 to-emerald-500' },
+    { label: 'Completion Rate', value: stats.completionRate, icon: TrendingUp, color: 'from-orange-500 to-red-500' },
   ]
+
+  // Recent activities from all tasks
+  const recentActivities = allTasks.slice(0, 5).map(task => ({
+    user: task.userEmail.split('@')[0],
+    action: task.status === 'completed' ? 'completed task' : task.status === 'in-progress' ? 'is working on' : 'created task',
+    task: task.title,
+    time: new Date(task.updatedAt).toLocaleString(),
+  }))
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
@@ -92,7 +160,7 @@ export default function AdminDashboard() {
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {stats.map((stat, index) => (
+          {statsDisplay.map((stat, index) => (
             <motion.div
               key={stat.label}
               initial={{ opacity: 0, y: 20 }}
@@ -124,38 +192,49 @@ export default function AdminDashboard() {
               <h3 className="text-2xl font-bold text-white">Team Members</h3>
             </div>
 
-            <div className="space-y-4">
-              {teamMembers.map((member, index) => (
-                <motion.div
-                  key={member.id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.5 + index * 0.1 }}
-                  className="bg-white/5 border border-white/10 rounded-xl p-4 hover:bg-white/10 transition"
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="text-white font-semibold">{member.name}</h4>
-                      <p className="text-purple-200 text-sm">{member.email}</p>
+            {loading ? (
+              <div className="text-center py-12">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500 mx-auto"></div>
+                <p className="text-purple-200 mt-4">Loading team data...</p>
+              </div>
+            ) : teamMembers.length > 0 ? (
+              <div className="space-y-4">
+                {teamMembers.map((member, index) => (
+                  <motion.div
+                    key={member.email}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.5 + index * 0.1 }}
+                    className="bg-white/5 border border-white/10 rounded-xl p-4 hover:bg-white/10 transition"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="text-white font-semibold">{member.email.split('@')[0]}</h4>
+                        <p className="text-purple-200 text-sm">{member.email}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-white font-semibold">{member.completed}/{member.tasks}</p>
+                        <p className="text-purple-200 text-sm">Tasks</p>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-white font-semibold">{member.completed}/{member.tasks}</p>
-                      <p className="text-purple-200 text-sm">Tasks</p>
+                    <div className="mt-3">
+                      <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ width: `${member.tasks > 0 ? (member.completed / member.tasks) * 100 : 0}%` }}
+                          transition={{ delay: 0.7 + index * 0.1, duration: 0.5 }}
+                          className="h-full bg-gradient-to-r from-green-500 to-emerald-500"
+                        />
+                      </div>
                     </div>
-                  </div>
-                  <div className="mt-3">
-                    <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${(member.completed / member.tasks) * 100}%` }}
-                        transition={{ delay: 0.7 + index * 0.1, duration: 0.5 }}
-                        className="h-full bg-gradient-to-r from-green-500 to-emerald-500"
-                      />
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
+                  </motion.div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <p className="text-purple-200">No team members yet</p>
+              </div>
+            )}
           </motion.div>
 
           {/* Recent Activity */}
@@ -170,13 +249,14 @@ export default function AdminDashboard() {
               <h3 className="text-2xl font-bold text-white">Recent Activity</h3>
             </div>
 
-            <div className="space-y-4">
-              {[
-                { user: 'John Doe', action: 'completed task', task: 'API Integration', time: '2 hours ago' },
-                { user: 'Jane Smith', action: 'started task', task: 'UI Design', time: '4 hours ago' },
-                { user: 'Mike Johnson', action: 'updated', task: 'Documentation', time: '6 hours ago' },
-                { user: 'John Doe', action: 'created task', task: 'Code Review', time: '8 hours ago' },
-              ].map((activity, index) => (
+            {loading ? (
+              <div className="text-center py-12">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500 mx-auto"></div>
+                <p className="text-purple-200 mt-4">Loading activities...</p>
+              </div>
+            ) : recentActivities.length > 0 ? (
+              <div className="space-y-4">
+                {recentActivities.map((activity, index) => (
                 <motion.div
                   key={index}
                   initial={{ opacity: 0, x: -20 }}
@@ -199,7 +279,12 @@ export default function AdminDashboard() {
                   </div>
                 </motion.div>
               ))}
-            </div>
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <p className="text-purple-200">No recent activities</p>
+              </div>
+            )}
           </motion.div>
         </div>
       </main>
