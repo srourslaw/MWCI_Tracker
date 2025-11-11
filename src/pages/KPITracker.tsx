@@ -141,14 +141,14 @@ export default function KPITracker() {
   const handleImportKPIs = async () => {
     if (!user) return
 
-    if (!confirm('This will import initial KPI data. Continue?')) {
+    if (!confirm('This will import initial KPI data from Excel. Any KPIs already in the database will be skipped. Continue?')) {
       return
     }
 
     setImporting(true)
     try {
       const result = await importInitialKPIs(user.uid)
-      alert(`Import complete!\n\nSuccessful: ${result.success}\nFailed: ${result.failed}`)
+      alert(`Import complete!\n\nSuccessful: ${result.success}\nSkipped (already exist): ${result.skipped}\nFailed: ${result.failed}\n\n${result.success > 0 ? 'You can now edit the imported KPIs and changes will persist!' : result.skipped > 0 ? 'All KPIs already exist in database. You can edit them now!' : ''}`)
       if (result.errors.length > 0) {
         console.error('Import errors:', result.errors)
       }
