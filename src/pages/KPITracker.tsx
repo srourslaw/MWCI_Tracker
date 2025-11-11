@@ -341,22 +341,22 @@ export default function KPITracker() {
 
                 {/* Row 2: Main Headers with Percentages */}
                 <tr className="bg-slate-100">
-                  <th className="border border-slate-300 p-2 text-left font-bold sticky left-0 bg-slate-100 z-10">
+                  <th rowSpan={2} className="border border-slate-300 p-2 text-left font-bold sticky left-0 bg-slate-100 z-10">
                     KPI Relationship
                   </th>
-                  <th className="border border-slate-300 p-2 text-center font-bold" style={{ backgroundColor: '#90EE90' }}>
+                  <th rowSpan={2} className="border border-slate-300 p-2 text-center font-bold" style={{ backgroundColor: '#90EE90' }}>
                     BI Report KPIs<br />(Phase 1c - ECC Sep 30)
                   </th>
                   <th className="border border-slate-300 p-2 text-center font-bold" style={{ backgroundColor: '#90EE90' }}>
                     Customer Signoff on FSD
                   </th>
-                  <th className="border border-slate-300 p-2 text-center font-bold" style={{ backgroundColor: '#90EE90' }}>
+                  <th rowSpan={2} className="border border-slate-300 p-2 text-center font-bold" style={{ backgroundColor: '#90EE90' }}>
                     Owner
                   </th>
                   <th className="border border-slate-300 p-2 text-center font-bold" style={{ backgroundColor: '#90EE90' }}>
                     {devCompletionPercent}%
                   </th>
-                  <th className="border border-slate-300 p-2 text-center font-bold" style={{ backgroundColor: '#90EE90' }}>
+                  <th rowSpan={2} className="border border-slate-300 p-2 text-center font-bold" style={{ backgroundColor: '#90EE90' }}>
                     Remarks 10/11
                   </th>
                   <th className="border border-slate-300 p-2 text-center font-bold" style={{ backgroundColor: '#FF8C00', color: 'white' }}>
@@ -378,24 +378,16 @@ export default function KPITracker() {
 
                 {/* Row 3: Sub-Headers */}
                 <tr className="bg-slate-50">
-                  <th className="border border-slate-300 p-2 text-center font-semibold text-xs sticky left-0 bg-slate-50 z-10">
-                    {/* Empty for KPI Relationship */}
-                  </th>
-                  <th className="border border-slate-300 p-2 text-center font-semibold text-xs">
-                    {/* Empty for BI Report KPIs */}
-                  </th>
+                  {/* KPI Relationship - merged with rowspan */}
+                  {/* BI Report KPIs - merged with rowspan */}
                   <th className="border border-slate-300 p-2 text-center font-semibold text-xs" style={{ backgroundColor: '#E8F5E9' }}>
                     Status
                   </th>
-                  <th className="border border-slate-300 p-2 text-center font-semibold text-xs" style={{ backgroundColor: '#E8F5E9' }}>
-                    {/* Empty for Owner */}
-                  </th>
+                  {/* Owner - merged with rowspan */}
                   <th className="border border-slate-300 p-2 text-center font-semibold text-xs" style={{ backgroundColor: '#E8F5E9' }}>
                     DEV - ECC<br />Completion
                   </th>
-                  <th className="border border-slate-300 p-2 text-center font-semibold text-xs" style={{ backgroundColor: '#E8F5E9' }}>
-                    {/* Empty for Remarks */}
-                  </th>
+                  {/* Remarks - merged with rowspan */}
                   <th className="border border-slate-300 p-2 text-center font-semibold text-xs" style={{ backgroundColor: '#FFE0B2' }}>
                     11-Nov
                   </th>
