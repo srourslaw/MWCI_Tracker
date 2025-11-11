@@ -440,73 +440,73 @@ export default function KPITracker() {
               <thead>
                 {/* Row 1: TARGET ECC - 1B */}
                 <tr>
-                  <th colSpan={11} className="border border-slate-300 p-2 text-center font-bold bg-blue-200">
+                  <th colSpan={11} className="border border-slate-400 p-3 text-center font-bold text-white text-lg tracking-wide" style={{ background: 'linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)' }}>
                     TARGET ECC - 1B
                   </th>
                 </tr>
 
                 {/* Row 2: Main Headers with Percentages */}
-                <tr className="bg-slate-100">
-                  <th rowSpan={2} className="border border-slate-300 p-2 text-left font-bold sticky left-0 bg-slate-100 z-10">
+                <tr>
+                  <th rowSpan={2} className="border border-slate-400 p-3 text-left font-bold sticky left-0 z-10 text-white" style={{ background: 'linear-gradient(135deg, #334155 0%, #475569 100%)' }}>
                     KPI Relationship
                   </th>
-                  <th rowSpan={2} className="border border-slate-300 p-2 text-center font-bold" style={{ backgroundColor: '#90EE90' }}>
+                  <th rowSpan={2} className="border border-slate-400 p-3 text-center font-bold text-white" style={{ background: 'linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%)' }}>
                     BI Report KPIs<br />(Phase 1c - ECC Sep 30)
                   </th>
-                  <th className="border border-slate-300 p-2 text-center font-bold" style={{ backgroundColor: '#90EE90' }}>
+                  <th className="border border-slate-400 p-3 text-center font-bold text-white" style={{ background: 'linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%)' }}>
                     Customer Signoff on FSD
                   </th>
-                  <th rowSpan={2} className="border border-slate-300 p-2 text-center font-bold" style={{ backgroundColor: '#90EE90' }}>
+                  <th rowSpan={2} className="border border-slate-400 p-3 text-center font-bold text-white" style={{ background: 'linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%)' }}>
                     Owner
                   </th>
-                  <th className="border border-slate-300 p-2 text-center font-bold" style={{ backgroundColor: '#90EE90' }}>
+                  <th className="border border-slate-400 p-3 text-center font-bold text-white" style={{ background: 'linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%)' }}>
                     {devCompletionPercent}%
                   </th>
-                  <th rowSpan={2} className="border border-slate-300 p-2 text-center font-bold" style={{ backgroundColor: '#90EE90' }}>
+                  <th rowSpan={2} className="border border-slate-400 p-3 text-center font-bold text-white" style={{ background: 'linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%)' }}>
                     Remarks 10/11
                   </th>
-                  <th className="border border-slate-300 p-2 text-center font-bold" style={{ backgroundColor: '#FF8C00', color: 'white' }}>
+                  <th className="border border-slate-400 p-3 text-center font-bold text-white" style={{ background: 'linear-gradient(135deg, #f59e0b 0%, #f97316 100%)' }}>
                     Customer Dependency
                   </th>
-                  <th className="border border-slate-300 p-2 text-center font-bold" style={{ backgroundColor: '#90EE90' }}>
+                  <th className="border border-slate-400 p-3 text-center font-bold text-white" style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)' }}>
                     Revised Dev Status
                   </th>
-                  <th className="border border-slate-300 p-2 text-center font-bold" style={{ backgroundColor: '#32CD32', color: 'white' }}>
+                  <th className="border border-slate-400 p-3 text-center font-bold text-white" style={{ background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)' }}>
                     {sitCompletionPercent}%
                   </th>
-                  <th className="border border-slate-300 p-2 text-center font-bold" style={{ backgroundColor: '#32CD32', color: 'white' }}>
+                  <th className="border border-slate-400 p-3 text-center font-bold text-white" style={{ background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)' }}>
                     {uatCompletionPercent}%
                   </th>
-                  <th className="border border-slate-300 p-2 text-center font-bold" style={{ backgroundColor: '#32CD32', color: 'white' }}>
+                  <th className="border border-slate-400 p-3 text-center font-bold text-white" style={{ background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)' }}>
                     {prodCompletionPercent}%
                   </th>
                 </tr>
 
                 {/* Row 3: Sub-Headers */}
-                <tr className="bg-slate-50">
+                <tr>
                   {/* KPI Relationship - merged with rowspan */}
                   {/* BI Report KPIs - merged with rowspan */}
-                  <th className="border border-slate-300 p-2 text-center font-semibold text-xs" style={{ backgroundColor: '#E8F5E9' }}>
+                  <th className="border border-slate-400 p-2 text-center font-semibold text-xs bg-sky-100 text-slate-700">
                     Status
                   </th>
                   {/* Owner - merged with rowspan */}
-                  <th className="border border-slate-300 p-2 text-center font-semibold text-xs" style={{ backgroundColor: '#E8F5E9' }}>
+                  <th className="border border-slate-400 p-2 text-center font-semibold text-xs bg-sky-100 text-slate-700">
                     DEV - ECC<br />Completion
                   </th>
                   {/* Remarks - merged with rowspan */}
-                  <th className="border border-slate-300 p-2 text-center font-semibold text-xs" style={{ backgroundColor: '#FFE0B2' }}>
+                  <th className="border border-slate-400 p-2 text-center font-semibold text-xs bg-orange-100 text-slate-700">
                     11-Nov
                   </th>
-                  <th className="border border-slate-300 p-2 text-center font-semibold text-xs" style={{ backgroundColor: '#E8F5E9' }}>
+                  <th className="border border-slate-400 p-2 text-center font-semibold text-xs bg-emerald-100 text-slate-700">
                     11-Nov
                   </th>
-                  <th className="border border-slate-300 p-2 text-center font-semibold text-xs" style={{ backgroundColor: '#C8E6C9' }}>
+                  <th className="border border-slate-400 p-2 text-center font-semibold text-xs bg-purple-100 text-slate-700">
                     Testing - SIT - ECC<br />Completion
                   </th>
-                  <th className="border border-slate-300 p-2 text-center font-semibold text-xs" style={{ backgroundColor: '#C8E6C9' }}>
+                  <th className="border border-slate-400 p-2 text-center font-semibold text-xs bg-purple-100 text-slate-700">
                     UAT - ECC<br />Completion
                   </th>
-                  <th className="border border-slate-300 p-2 text-center font-semibold text-xs" style={{ backgroundColor: '#C8E6C9' }}>
+                  <th className="border border-slate-400 p-2 text-center font-semibold text-xs bg-purple-100 text-slate-700">
                     PROD - ECC<br />Completion
                   </th>
                 </tr>
@@ -515,8 +515,8 @@ export default function KPITracker() {
                 {Object.entries(groupedKPIs).map(([category, categoryKPIs]) => (
                   <>
                     {/* Category Header */}
-                    <tr key={`category-${category}`} className="bg-blue-100">
-                      <td colSpan={11} className="border border-slate-300 p-2 font-bold text-left">
+                    <tr key={`category-${category}`}>
+                      <td colSpan={11} className="border border-slate-400 p-2 font-bold text-left text-white" style={{ background: 'linear-gradient(135deg, #64748b 0%, #94a3b8 100%)' }}>
                         {category}
                       </td>
                     </tr>
