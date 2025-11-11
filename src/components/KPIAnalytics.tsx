@@ -11,11 +11,6 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-  RadialBarChart,
-  RadialBar,
-  FunnelChart,
-  Funnel,
-  LabelList,
 } from 'recharts'
 import { KPI } from '../types/kpi'
 import { TrendingUp, PieChartIcon, BarChart3, Target, AlertCircle, Activity } from 'lucide-react'
@@ -51,29 +46,21 @@ export default function KPIAnalytics({ kpis }: KPIAnalyticsProps) {
     }, {} as Record<string, number>)
   ).map(([name, value]) => ({ name, value }))
 
-  // Phase Completion Data
-  const phaseCompletionData = [
-    {
-      name: 'DEV',
-      completion: Math.round(kpis.reduce((sum, kpi) => sum + kpi.devCompletion, 0) / kpis.length),
-      fill: COLORS.phases.dev,
-    },
-    {
-      name: 'SIT',
-      completion: Math.round(kpis.reduce((sum, kpi) => sum + kpi.sitCompletion, 0) / kpis.length),
-      fill: COLORS.phases.sit,
-    },
-    {
-      name: 'UAT',
-      completion: Math.round(kpis.reduce((sum, kpi) => sum + kpi.uatCompletion, 0) / kpis.length),
-      fill: COLORS.phases.uat,
-    },
-    {
-      name: 'PROD',
-      completion: Math.round(kpis.reduce((sum, kpi) => sum + kpi.prodCompletion, 0) / kpis.length),
-      fill: COLORS.phases.prod,
-    },
-  ]
+  // Phase Completion Data with detailed metrics
+  const calculatePhaseMetrics = (phase: 'dev' | 'sit' | 'uat' | 'prod') => {
+    const completionField = `${phase}Completion` as 'devCompletion' | 'sitCompletion' | 'uatCompletion' | 'prodCompletion'
+    const avgCompletion = Math.round(kpis.reduce((sum, kpi) => sum + kpi[completionField], 0) / kpis.length)
+    const fullyCompleted = kpis.filter(kpi => kpi[completionField] === 100).length
+    const inProgress = kpis.filter(kpi => kpi[completionField] > 0 && kpi[completionField] < 100).length
+    const notStarted = kpis.filter(kpi => kpi[completionField] === 0).length
+
+    return { avgCompletion, fullyCompleted, inProgress, notStarted, total: kpis.length }
+  }
+
+  const devMetrics = calculatePhaseMetrics('dev')
+  const sitMetrics = calculatePhaseMetrics('sit')
+  const uatMetrics = calculatePhaseMetrics('uat')
+  const prodMetrics = calculatePhaseMetrics('prod')
 
   // Status Breakdown by Phase
   const getStatusCounts = (phase: 'devStatus' | 'sitStatus' | 'uatStatus' | 'prodStatus') => {
@@ -90,32 +77,43 @@ export default function KPIAnalytics({ kpis }: KPIAnalyticsProps) {
     count,
   }))
 
-  // Development Pipeline Funnel
+  // Development Pipeline with conversion rates
+  const totalKPIs = kpis.length
+  const devComplete = kpis.filter((k) => k.devStatus === 'Completed' || k.devStatus === 'Ready for SIT').length
+  const sitPassed = kpis.filter((k) => k.sitStatus === 'Passed').length
+  const uatPassed = kpis.filter((k) => k.uatStatus === 'Passed').length
+  const prodPassed = kpis.filter((k) => k.prodStatus === 'Passed').length
+
   const pipelineFunnelData = [
     {
       name: 'Total KPIs',
-      value: kpis.length,
-      fill: COLORS.phases.dev,
+      value: totalKPIs,
+      fill: '#64748b',
+      percentage: 100,
     },
     {
       name: 'DEV Complete',
-      value: kpis.filter((k) => k.devStatus === 'Completed' || k.devStatus === 'Ready for SIT').length,
+      value: devComplete,
       fill: COLORS.phases.dev,
+      percentage: totalKPIs > 0 ? Math.round((devComplete / totalKPIs) * 100) : 0,
     },
     {
       name: 'SIT Passed',
-      value: kpis.filter((k) => k.sitStatus === 'Passed').length,
+      value: sitPassed,
       fill: COLORS.phases.sit,
+      percentage: totalKPIs > 0 ? Math.round((sitPassed / totalKPIs) * 100) : 0,
     },
     {
       name: 'UAT Passed',
-      value: kpis.filter((k) => k.uatStatus === 'Passed').length,
+      value: uatPassed,
       fill: COLORS.phases.uat,
+      percentage: totalKPIs > 0 ? Math.round((uatPassed / totalKPIs) * 100) : 0,
     },
     {
-      name: 'PROD Passed',
-      value: kpis.filter((k) => k.prodStatus === 'Passed').length,
+      name: 'PROD Deployed',
+      value: prodPassed,
       fill: COLORS.phases.prod,
+      percentage: totalKPIs > 0 ? Math.round((prodPassed / totalKPIs) * 100) : 0,
     },
   ]
 
@@ -184,65 +182,226 @@ export default function KPIAnalytics({ kpis }: KPIAnalyticsProps) {
 
       {/* Row 1: Phase Completion Radial + Development Funnel */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Phase Completion Radial Bars */}
+        {/* Phase Completion Radial Bars - Enhanced */}
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.1 }}
           className="glass-morphism rounded-2xl p-6"
         >
-          <div className="flex items-center gap-2 mb-4">
-            <Target className="w-5 h-5 text-sky-600" />
-            <h3 className="text-lg font-bold text-slate-800">Phase Completion Overview</h3>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Target className="w-5 h-5 text-sky-600" />
+              <h3 className="text-lg font-bold text-slate-800">Phase Completion Overview</h3>
+            </div>
+            <div className="text-right">
+              <p className="text-xs text-slate-500">Overall Progress</p>
+              <p className="text-2xl font-bold text-sky-600">
+                {Math.round((devMetrics.avgCompletion + sitMetrics.avgCompletion + uatMetrics.avgCompletion + prodMetrics.avgCompletion) / 4)}%
+              </p>
+            </div>
           </div>
-          <ResponsiveContainer width="100%" height={300}>
-            <RadialBarChart
-              cx="50%"
-              cy="50%"
-              innerRadius="10%"
-              outerRadius="90%"
-              data={phaseCompletionData}
-              startAngle={90}
-              endAngle={-270}
-            >
-              <RadialBar
-                background
-                dataKey="completion"
-                cornerRadius={10}
-                label={{ position: 'insideStart', fill: '#fff', fontWeight: 'bold' }}
-              />
-              <Legend
-                iconSize={10}
-                layout="horizontal"
-                verticalAlign="bottom"
-                align="center"
-                wrapperStyle={{ paddingTop: '20px' }}
-              />
-              <Tooltip content={<CustomTooltip />} />
-            </RadialBarChart>
-          </ResponsiveContainer>
+
+          <div className="space-y-4">
+            {/* DEV Phase */}
+            <div className="bg-white/50 rounded-lg p-4 border border-sky-100">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS.phases.dev }}></div>
+                  <span className="font-semibold text-slate-800">DEV</span>
+                </div>
+                <span className="text-2xl font-bold text-sky-600">{devMetrics.avgCompletion}%</span>
+              </div>
+              <div className="w-full bg-slate-200 rounded-full h-3 overflow-hidden">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${devMetrics.avgCompletion}%` }}
+                  transition={{ duration: 1, delay: 0.2 }}
+                  className="h-full rounded-full"
+                  style={{ background: `linear-gradient(90deg, ${COLORS.phases.dev}, #06b6d4)` }}
+                />
+              </div>
+              <div className="flex justify-between mt-2 text-xs text-slate-600">
+                <span>✓ {devMetrics.fullyCompleted} Completed</span>
+                <span>⟳ {devMetrics.inProgress} In Progress</span>
+                <span>○ {devMetrics.notStarted} Not Started</span>
+              </div>
+            </div>
+
+            {/* SIT Phase */}
+            <div className="bg-white/50 rounded-lg p-4 border border-purple-100">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS.phases.sit }}></div>
+                  <span className="font-semibold text-slate-800">SIT</span>
+                </div>
+                <span className="text-2xl font-bold text-purple-600">{sitMetrics.avgCompletion}%</span>
+              </div>
+              <div className="w-full bg-slate-200 rounded-full h-3 overflow-hidden">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${sitMetrics.avgCompletion}%` }}
+                  transition={{ duration: 1, delay: 0.4 }}
+                  className="h-full rounded-full"
+                  style={{ background: `linear-gradient(90deg, ${COLORS.phases.sit}, #a855f7)` }}
+                />
+              </div>
+              <div className="flex justify-between mt-2 text-xs text-slate-600">
+                <span>✓ {sitMetrics.fullyCompleted} Passed</span>
+                <span>⟳ {sitMetrics.inProgress} Testing</span>
+                <span>○ {sitMetrics.notStarted} Pending</span>
+              </div>
+            </div>
+
+            {/* UAT Phase */}
+            <div className="bg-white/50 rounded-lg p-4 border border-orange-100">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS.phases.uat }}></div>
+                  <span className="font-semibold text-slate-800">UAT</span>
+                </div>
+                <span className="text-2xl font-bold text-orange-600">{uatMetrics.avgCompletion}%</span>
+              </div>
+              <div className="w-full bg-slate-200 rounded-full h-3 overflow-hidden">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${uatMetrics.avgCompletion}%` }}
+                  transition={{ duration: 1, delay: 0.6 }}
+                  className="h-full rounded-full"
+                  style={{ background: `linear-gradient(90deg, ${COLORS.phases.uat}, #fb923c)` }}
+                />
+              </div>
+              <div className="flex justify-between mt-2 text-xs text-slate-600">
+                <span>✓ {uatMetrics.fullyCompleted} Passed</span>
+                <span>⟳ {uatMetrics.inProgress} Testing</span>
+                <span>○ {uatMetrics.notStarted} Pending</span>
+              </div>
+            </div>
+
+            {/* PROD Phase */}
+            <div className="bg-white/50 rounded-lg p-4 border border-green-100">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS.phases.prod }}></div>
+                  <span className="font-semibold text-slate-800">PROD</span>
+                </div>
+                <span className="text-2xl font-bold text-green-600">{prodMetrics.avgCompletion}%</span>
+              </div>
+              <div className="w-full bg-slate-200 rounded-full h-3 overflow-hidden">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${prodMetrics.avgCompletion}%` }}
+                  transition={{ duration: 1, delay: 0.8 }}
+                  className="h-full rounded-full"
+                  style={{ background: `linear-gradient(90deg, ${COLORS.phases.prod}, #22c55e)` }}
+                />
+              </div>
+              <div className="flex justify-between mt-2 text-xs text-slate-600">
+                <span>✓ {prodMetrics.fullyCompleted} Deployed</span>
+                <span>⟳ {prodMetrics.inProgress} In Progress</span>
+                <span>○ {prodMetrics.notStarted} Pending</span>
+              </div>
+            </div>
+          </div>
         </motion.div>
 
-        {/* Development Pipeline Funnel */}
+        {/* Development Pipeline - Enhanced */}
         <motion.div
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.2 }}
           className="glass-morphism rounded-2xl p-6"
         >
-          <div className="flex items-center gap-2 mb-4">
-            <TrendingUp className="w-5 h-5 text-sky-600" />
-            <h3 className="text-lg font-bold text-slate-800">Development Pipeline</h3>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 text-sky-600" />
+              <h3 className="text-lg font-bold text-slate-800">Development Pipeline</h3>
+            </div>
+            <div className="text-right">
+              <p className="text-xs text-slate-500">Success Rate</p>
+              <p className="text-2xl font-bold text-green-600">
+                {totalKPIs > 0 ? Math.round((prodPassed / totalKPIs) * 100) : 0}%
+              </p>
+            </div>
           </div>
-          <ResponsiveContainer width="100%" height={300}>
-            <FunnelChart>
-              <Tooltip content={<CustomTooltip />} />
-              <Funnel dataKey="value" data={pipelineFunnelData} isAnimationActive>
-                <LabelList position="right" fill="#000" stroke="none" dataKey="name" />
-                <LabelList position="center" fill="#fff" stroke="none" dataKey="value" />
-              </Funnel>
-            </FunnelChart>
-          </ResponsiveContainer>
+
+          <div className="space-y-3">
+            {pipelineFunnelData.map((stage, index) => (
+              <motion.div
+                key={stage.name}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.1 * index }}
+                className="relative"
+              >
+                <div className="bg-white/50 rounded-lg p-4 border border-slate-200 hover:border-sky-300 transition-all">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-3">
+                      <div
+                        className="flex items-center justify-center w-8 h-8 rounded-full text-white font-bold text-sm"
+                        style={{ backgroundColor: stage.fill }}
+                      >
+                        {index + 1}
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-slate-800">{stage.name}</h4>
+                        <p className="text-xs text-slate-500">{stage.percentage}% of total</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-3xl font-bold" style={{ color: stage.fill }}>
+                        {stage.value}
+                      </p>
+                      <p className="text-xs text-slate-500">KPIs</p>
+                    </div>
+                  </div>
+
+                  {/* Progress bar */}
+                  <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden mt-2">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${stage.percentage}%` }}
+                      transition={{ duration: 1, delay: 0.3 + index * 0.1 }}
+                      className="h-full rounded-full"
+                      style={{ backgroundColor: stage.fill }}
+                    />
+                  </div>
+                </div>
+
+                {/* Conversion arrow */}
+                {index < pipelineFunnelData.length - 1 && (
+                  <div className="flex items-center justify-center my-1">
+                    <div className="flex items-center gap-2 bg-slate-100 px-3 py-1 rounded-full">
+                      <svg className="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                      </svg>
+                      <span className="text-xs font-semibold text-slate-600">
+                        {stage.value > 0 && pipelineFunnelData[index + 1]
+                          ? `${Math.round((pipelineFunnelData[index + 1].value / stage.value) * 100)}%`
+                          : '0%'}
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Pipeline Summary */}
+          <div className="mt-4 pt-4 border-t border-slate-200">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="text-center">
+                <p className="text-xs text-slate-500">Drop-off Rate</p>
+                <p className="text-xl font-bold text-red-600">
+                  {totalKPIs > 0 ? Math.round(((totalKPIs - prodPassed) / totalKPIs) * 100) : 0}%
+                </p>
+              </div>
+              <div className="text-center">
+                <p className="text-xs text-slate-500">In Pipeline</p>
+                <p className="text-xl font-bold text-orange-600">{totalKPIs - prodPassed}</p>
+              </div>
+            </div>
+          </div>
         </motion.div>
       </div>
 
