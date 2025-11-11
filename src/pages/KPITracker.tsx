@@ -478,7 +478,7 @@ export default function KPITracker() {
                             value={kpi.revisedDevStatus || 'Not Started'}
                             onSave={(v) => handleUpdateField(kpi.id, 'revisedDevStatus', v)}
                             type="select"
-                            options={['Not Started', 'In Progress', 'Completed', 'Passed', 'Failed', 'Done', '?']}
+                            options={['Not Started', 'In Progress', 'Completed', 'Passed', 'Failed', 'Done', 'Onhold', '?']}
                             bgColor={getCellBgColor(kpi.revisedDevStatus, 'revisedDevStatus')}
                             editable={isAdmin}
                           />
@@ -488,7 +488,7 @@ export default function KPITracker() {
                             value={kpi.sitStatus}
                             onSave={(v) => handleUpdateField(kpi.id, 'sitStatus', v)}
                             type="select"
-                            options={['Not Started', 'Pending', 'In Progress', 'Passed', 'Failed', 'Can we put in UAT?', 'Can we put in Prod?']}
+                            options={['Not Started', 'Pending', 'In Progress', 'Passed', 'Failed', 'Can we put in UAT?', 'Can we put in Prod?', 'Ready for SIT - until Sep', 'Ready for SIT - may Failed']}
                             bgColor={getCellBgColor(kpi.sitStatus, 'sitStatus')}
                             textColor={kpi.sitStatus?.includes('PENDING') ? 'text-white' : 'text-slate-800'}
                             editable={isAdmin}

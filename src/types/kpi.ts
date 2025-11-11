@@ -23,6 +23,8 @@ export type TestingStatus =
   | 'Failed'
   | 'Can we put in UAT?'
   | 'Can we put in Prod?'
+  | 'Ready for SIT - until Sep'
+  | 'Ready for SIT - may Failed'
 
 export type SignoffStatus = 'Pending' | 'Submitted' | 'Approved'
 
@@ -46,6 +48,7 @@ export type RevisedDevStatus =
   | 'Passed'
   | 'Failed'
   | 'Done'
+  | 'Onhold'
   | '?'
   | string
 
