@@ -19,8 +19,10 @@ import {
   Maximize2,
   Filter,
   X,
+  FileText,
 } from 'lucide-react'
 import { kpiService } from '../services/kpiService'
+import { auditService } from '../services/auditService'
 import { KPI, KPIInput } from '../types/kpi'
 import { getTeamMemberName } from '../data/teamMembers'
 import KPIModal from '../components/KPIModal'
@@ -110,6 +112,12 @@ export default function KPITracker() {
     if (!user) return
 
     try {
+      // Find the KPI to get old value and metadata
+      const kpi = mergedKPIs.find(k => k.id === kpiId)
+      if (!kpi) return
+
+      const oldValue = (kpi as any)[field] || ''
+
       // Check if this is a temporary ID (from initial data)
       if (kpiId.startsWith('initial-')) {
         // Find the initial KPI data
@@ -125,12 +133,40 @@ export default function KPITracker() {
           }
           const newId = await kpiService.createKPI(user.uid, newKPI)
           console.log('Created KPI with ID:', newId)
+
+          // Log the change to audit trail
+          await auditService.logChange({
+            kpiId: newId,
+            kpiName: kpi.name,
+            kpiCategory: kpi.category,
+            field,
+            oldValue,
+            newValue: value,
+            changedBy: user.uid,
+            changedByEmail: user.email || '',
+            changedByName: getTeamMemberName(user.email || ''),
+            changeType: 'create',
+          })
         }
       } else {
         // Update existing KPI in Firestore
         console.log('Updating existing KPI:', kpiId, field, value)
         await kpiService.updateKPI(kpiId, { [field]: value } as Partial<KPIInput>)
         console.log('Update successful')
+
+        // Log the change to audit trail
+        await auditService.logChange({
+          kpiId,
+          kpiName: kpi.name,
+          kpiCategory: kpi.category,
+          field,
+          oldValue,
+          newValue: value,
+          changedBy: user.uid,
+          changedByEmail: user.email || '',
+          changedByName: getTeamMemberName(user.email || ''),
+          changeType: 'update',
+        })
       }
     } catch (error) {
       console.error('Error updating field:', error)
@@ -518,6 +554,16 @@ export default function KPITracker() {
 
             {isAdmin && (
               <>
+                <Link to="/audit-log">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-lg hover:from-purple-600 hover:to-indigo-700 transition shadow-md flex items-center gap-2"
+                  >
+                    <FileText className="w-4 h-4" />
+                    Audit Log
+                  </motion.button>
+                </Link>
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}

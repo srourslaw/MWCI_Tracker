@@ -6,6 +6,7 @@ import RegisterPage from './pages/RegisterPage'
 import Dashboard from './pages/Dashboard'
 import AdminDashboard from './pages/AdminDashboard'
 import KPITracker from './pages/KPITracker'
+import AuditLog from './pages/AuditLog'
 
 function PrivateRoute({ children, adminOnly = false }: { children: React.ReactNode, adminOnly?: boolean }) {
   const { user, loading } = useAuth()
@@ -57,6 +58,14 @@ function App() {
             element={
               <PrivateRoute>
                 <KPITracker />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/audit-log"
+            element={
+              <PrivateRoute adminOnly={true}>
+                <AuditLog />
               </PrivateRoute>
             }
           />
