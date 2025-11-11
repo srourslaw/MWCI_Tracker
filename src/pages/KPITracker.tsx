@@ -19,6 +19,7 @@ import { getTeamMemberName } from '../data/teamMembers'
 import KPIModal from '../components/KPIModal'
 import EditableCell from '../components/EditableCell'
 import { importInitialKPIs } from '../utils/importKPIs'
+import { initialKPIs } from '../data/initialKPIs'
 
 export default function KPITracker() {
   const { user, logout } = useAuth()
@@ -85,7 +86,26 @@ export default function KPITracker() {
   }
 
   const handleUpdateField = async (kpiId: string, field: string, value: any) => {
-    await kpiService.updateKPI(kpiId, { [field]: value } as Partial<KPIInput>)
+    if (!user) return
+
+    // Check if this is a temporary ID (from initial data)
+    if (kpiId.startsWith('initial-')) {
+      // Find the initial KPI data
+      const index = parseInt(kpiId.replace('initial-', ''))
+      const initialKPI = initialKPIs[index]
+
+      if (initialKPI) {
+        // Create a new KPI in Firestore with the updated field
+        const newKPI: KPIInput = {
+          ...initialKPI,
+          [field]: value,
+        }
+        await kpiService.createKPI(user.uid, newKPI)
+      }
+    } else {
+      // Update existing KPI in Firestore
+      await kpiService.updateKPI(kpiId, { [field]: value } as Partial<KPIInput>)
+    }
   }
 
   const handleImportKPIs = async () => {
@@ -110,7 +130,30 @@ export default function KPITracker() {
     }
   }
 
-  const filteredKPIs = kpis.filter((kpi) => {
+  // Merge initial KPIs with Firestore data
+  // Always show initial KPIs, but use Firestore data if it exists for that KPI
+  const mergedKPIs: KPI[] = initialKPIs.map((initialKPI, index) => {
+    // Try to find matching KPI in Firestore by name and category
+    const firestoreKPI = kpis.find(
+      (k) => k.name === initialKPI.name && k.category === initialKPI.category
+    )
+
+    // If found in Firestore, use that data; otherwise use initial data with temp ID
+    if (firestoreKPI) {
+      return firestoreKPI
+    } else {
+      // Return initial KPI with temporary ID for display only
+      return {
+        ...initialKPI,
+        id: `initial-${index}`,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        createdBy: 'system',
+      } as KPI
+    }
+  })
+
+  const filteredKPIs = mergedKPIs.filter((kpi) => {
     const matchesSearch =
       kpi.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       kpi.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -130,11 +173,11 @@ export default function KPITracker() {
 
   // Calculate dynamic percentages from actual data
   const calculateCompletionPercentage = (field: 'devStatus' | 'sitStatus' | 'uatStatus' | 'prodStatus') => {
-    if (kpis.length === 0) return 0
+    if (mergedKPIs.length === 0) return 0
 
     const completedStatuses = ['Completed', 'Passed']
-    const completed = kpis.filter(kpi => completedStatuses.includes(kpi[field])).length
-    return Math.round((completed / kpis.length) * 100)
+    const completed = mergedKPIs.filter(kpi => completedStatuses.includes(kpi[field])).length
+    return Math.round((completed / mergedKPIs.length) * 100)
   }
 
   const devCompletionPercent = calculateCompletionPercentage('devStatus')
@@ -143,12 +186,12 @@ export default function KPITracker() {
   const prodCompletionPercent = calculateCompletionPercentage('prodStatus')
 
   // Calculate overall progress for stats cards
-  const avgDevProgress = kpis.length > 0
-    ? Math.round(kpis.reduce((sum, kpi) => sum + kpi.devCompletion, 0) / kpis.length)
+  const avgDevProgress = mergedKPIs.length > 0
+    ? Math.round(mergedKPIs.reduce((sum, kpi) => sum + kpi.devCompletion, 0) / mergedKPIs.length)
     : 0
 
-  const avgSitProgress = kpis.length > 0
-    ? Math.round(kpis.reduce((sum, kpi) => sum + kpi.sitCompletion, 0) / kpis.length)
+  const avgSitProgress = mergedKPIs.length > 0
+    ? Math.round(mergedKPIs.reduce((sum, kpi) => sum + kpi.sitCompletion, 0) / mergedKPIs.length)
     : 0
 
   const getCellBgColor = (status: string | undefined, field: string) => {
@@ -245,7 +288,7 @@ export default function KPITracker() {
               </div>
             </div>
             <p className="text-slate-600 text-sm mb-1">Total KPIs</p>
-            <p className="text-3xl font-bold text-slate-800">{kpis.length}</p>
+            <p className="text-3xl font-bold text-slate-800">{mergedKPIs.length}</p>
           </motion.div>
 
           <motion.div
@@ -291,7 +334,7 @@ export default function KPITracker() {
             </div>
             <p className="text-slate-600 text-sm mb-1">Completed</p>
             <p className="text-3xl font-bold text-slate-800">
-              {kpis.filter(k => k.devStatus === 'Completed').length}
+              {mergedKPIs.filter(k => k.devStatus === 'Completed').length}
             </p>
           </motion.div>
         </div>
