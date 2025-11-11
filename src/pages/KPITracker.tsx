@@ -109,23 +109,32 @@ export default function KPITracker() {
   const handleUpdateField = async (kpiId: string, field: string, value: any) => {
     if (!user) return
 
-    // Check if this is a temporary ID (from initial data)
-    if (kpiId.startsWith('initial-')) {
-      // Find the initial KPI data
-      const index = parseInt(kpiId.replace('initial-', ''))
-      const initialKPI = initialKPIs[index]
+    try {
+      // Check if this is a temporary ID (from initial data)
+      if (kpiId.startsWith('initial-')) {
+        // Find the initial KPI data
+        const index = parseInt(kpiId.replace('initial-', ''))
+        const initialKPI = initialKPIs[index]
 
-      if (initialKPI) {
-        // Create a new KPI in Firestore with the updated field
-        const newKPI: KPIInput = {
-          ...initialKPI,
-          [field]: value,
+        if (initialKPI) {
+          console.log('Creating new KPI in Firestore with updated field:', field, value)
+          // Create a new KPI in Firestore with the updated field
+          const newKPI: KPIInput = {
+            ...initialKPI,
+            [field]: value,
+          }
+          const newId = await kpiService.createKPI(user.uid, newKPI)
+          console.log('Created KPI with ID:', newId)
         }
-        await kpiService.createKPI(user.uid, newKPI)
+      } else {
+        // Update existing KPI in Firestore
+        console.log('Updating existing KPI:', kpiId, field, value)
+        await kpiService.updateKPI(kpiId, { [field]: value } as Partial<KPIInput>)
+        console.log('Update successful')
       }
-    } else {
-      // Update existing KPI in Firestore
-      await kpiService.updateKPI(kpiId, { [field]: value } as Partial<KPIInput>)
+    } catch (error) {
+      console.error('Error updating field:', error)
+      alert('Failed to update. Please check console for errors.')
     }
   }
 
