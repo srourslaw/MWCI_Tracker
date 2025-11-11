@@ -23,8 +23,11 @@ export default function EditableCell({
   const [editValue, setEditValue] = useState(value)
 
   useEffect(() => {
-    setEditValue(value)
-  }, [value])
+    // Only update editValue if we're not currently editing
+    if (!isEditing) {
+      setEditValue(value)
+    }
+  }, [value, isEditing])
 
   const handleSave = () => {
     if (editValue !== value) {
@@ -62,9 +65,16 @@ export default function EditableCell({
             if (newValue !== value) {
               onSave(newValue)
             }
-            setIsEditing(false)
+            // Small delay to ensure save completes before closing
+            setTimeout(() => {
+              setIsEditing(false)
+            }, 100)
           }}
-          onBlur={() => setIsEditing(false)}
+          onBlur={() => {
+            setTimeout(() => {
+              setIsEditing(false)
+            }, 100)
+          }}
           onKeyDown={handleKeyDown}
           autoFocus
           className={`w-full px-2 py-1 text-sm border-2 border-sky-500 focus:outline-none ${textColor}`}
