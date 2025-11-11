@@ -25,6 +25,7 @@ export type TestingStatus =
   | 'Can we put in Prod?'
   | 'Ready for SIT - until Sep'
   | 'Ready for SIT - may Failed'
+  | 'PENDING CUSTOMER FOR DATA'
 
 export type SignoffStatus = 'Pending' | 'Submitted' | 'Approved'
 

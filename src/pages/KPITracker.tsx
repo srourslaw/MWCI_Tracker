@@ -594,7 +594,7 @@ export default function KPITracker() {
                             value={kpi.sitStatus}
                             onSave={(v) => handleUpdateField(kpi.id, 'sitStatus', v)}
                             type="select"
-                            options={['Not Started', 'Pending', 'In Progress', 'Passed', 'Failed', 'Can we put in UAT?', 'Can we put in Prod?', 'Ready for SIT - until Sep', 'Ready for SIT - may Failed']}
+                            options={['Not Started', 'Pending', 'In Progress', 'Passed', 'Failed', 'Can we put in UAT?', 'Can we put in Prod?', 'Ready for SIT - until Sep', 'Ready for SIT - may Failed', 'PENDING CUSTOMER FOR DATA']}
                             bgColor={getCellBgColor(kpi.sitStatus, 'sitStatus')}
                             textColor={kpi.sitStatus?.includes('PENDING') ? 'text-white' : 'text-slate-800'}
                             editable={isAdmin}

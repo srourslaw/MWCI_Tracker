@@ -1,14 +1,15 @@
 import { KPIInput } from '../types/kpi'
 
-// Initial KPI data from Excel tracker - Complete List
+// Initial KPI data from Excel tracker - Complete List with accurate SIT/UAT/PROD statuses
 export const initialKPIs: KPIInput[] = [
+  // Row 1
   {
     category: 'Consumptions',
     name: 'Gross Billed Volume (Gross Consuption)',
     signoffStatus: 'Submitted',
     devStatus: 'Completed',
     devCompletion: 100,
-    sitStatus: 'Not Started',
+    sitStatus: 'PENDING CUSTOMER FOR DATA',
     sitCompletion: 0,
     uatStatus: 'Not Started',
     uatCompletion: 0,
@@ -19,14 +20,15 @@ export const initialKPIs: KPIInput[] = [
     customerDependencyStatus: 'None',
     revisedDevStatus: 'Not Started',
   },
+  // Row 2
   {
     category: 'Consumptions, Reversals, Revisions',
     name: 'Billed Volume',
     signoffStatus: 'Submitted',
     devStatus: 'Completed',
     devCompletion: 100,
-    sitStatus: 'Not Started',
-    sitCompletion: 0,
+    sitStatus: 'In Progress',
+    sitCompletion: 50,
     uatStatus: 'Not Started',
     uatCompletion: 0,
     prodStatus: 'Not Started',
@@ -36,13 +38,14 @@ export const initialKPIs: KPIInput[] = [
     customerDependencyStatus: 'None',
     revisedDevStatus: 'Not Started',
   },
+  // Row 3
   {
     category: 'Consumptions, Reversals, Revisions',
     name: 'Reading Days',
     signoffStatus: 'Submitted',
     devStatus: 'Completed',
     devCompletion: 100,
-    sitStatus: 'Not Started',
+    sitStatus: 'PENDING CUSTOMER FOR DATA',
     sitCompletion: 0,
     uatStatus: 'Not Started',
     uatCompletion: 0,
@@ -53,13 +56,14 @@ export const initialKPIs: KPIInput[] = [
     customerDependencyStatus: 'None',
     revisedDevStatus: 'Not Started',
   },
+  // Row 4
   {
     category: 'Consumptions, Reversals, Revisions',
     name: 'Average Reading Days',
     signoffStatus: 'Submitted',
     devStatus: 'Completed',
     devCompletion: 100,
-    sitStatus: 'Not Started',
+    sitStatus: 'PENDING CUSTOMER FOR DATA',
     sitCompletion: 0,
     uatStatus: 'Not Started',
     uatCompletion: 0,
@@ -70,13 +74,14 @@ export const initialKPIs: KPIInput[] = [
     customerDependencyStatus: 'None',
     revisedDevStatus: 'Not Started',
   },
+  // Row 5
   {
     category: 'Consumptions, Reversals, Revisions',
     name: 'MLD',
     signoffStatus: 'Submitted',
     devStatus: 'Completed',
     devCompletion: 100,
-    sitStatus: 'Not Started',
+    sitStatus: 'PENDING CUSTOMER FOR DATA',
     sitCompletion: 0,
     uatStatus: 'Not Started',
     uatCompletion: 0,
@@ -87,13 +92,14 @@ export const initialKPIs: KPIInput[] = [
     customerDependencyStatus: 'None',
     revisedDevStatus: 'Not Started',
   },
+  // Row 6
   {
     category: 'Consumptions, Reversals, Revisions',
     name: 'Basic Revenue',
     signoffStatus: 'Submitted',
     devStatus: 'Completed',
     devCompletion: 100,
-    sitStatus: 'Not Started',
+    sitStatus: 'PENDING CUSTOMER FOR DATA',
     sitCompletion: 0,
     uatStatus: 'Not Started',
     uatCompletion: 0,
@@ -104,13 +110,14 @@ export const initialKPIs: KPIInput[] = [
     customerDependencyStatus: 'None',
     revisedDevStatus: 'Not Started',
   },
+  // Row 7
   {
     category: 'Consumptions, Reversals, Revisions',
     name: 'Envi Revenue',
     signoffStatus: 'Submitted',
     devStatus: 'Completed',
     devCompletion: 100,
-    sitStatus: 'Not Started',
+    sitStatus: 'PENDING CUSTOMER FOR DATA',
     sitCompletion: 0,
     uatStatus: 'Not Started',
     uatCompletion: 0,
@@ -121,47 +128,50 @@ export const initialKPIs: KPIInput[] = [
     customerDependencyStatus: 'None',
     revisedDevStatus: 'Not Started',
   },
+  // Row 8
   {
     category: 'Consumptions, Reversals, Revisions',
     name: 'Sewer Revenue',
     signoffStatus: 'Submitted',
     devStatus: 'Completed',
     devCompletion: 100,
-    sitStatus: 'Not Started',
-    sitCompletion: 0,
-    uatStatus: 'Not Started',
+    sitStatus: 'Passed',
+    sitCompletion: 100,
+    uatStatus: 'Can we put in UAT?',
     uatCompletion: 0,
-    prodStatus: 'Not Started',
+    prodStatus: 'Can we put in Prod?',
     prodCompletion: 0,
     owner: '',
     remarks: '',
     customerDependencyStatus: 'None',
     revisedDevStatus: 'Not Started',
   },
+  // Row 9
   {
     category: 'Consumptions, Reversals, Revisions',
     name: 'SC Discount',
     signoffStatus: 'Submitted',
     devStatus: 'Completed',
     devCompletion: 100,
-    sitStatus: 'Not Started',
-    sitCompletion: 0,
-    uatStatus: 'Not Started',
+    sitStatus: 'Passed',
+    sitCompletion: 100,
+    uatStatus: 'Can we put in UAT?',
     uatCompletion: 0,
-    prodStatus: 'Not Started',
+    prodStatus: 'Can we put in Prod?',
     prodCompletion: 0,
     owner: '',
     remarks: '',
     customerDependencyStatus: 'None',
     revisedDevStatus: 'Not Started',
   },
+  // Row 10
   {
     category: 'Consumptions, Reversals, Revisions',
     name: 'Revenue',
     signoffStatus: 'Submitted',
     devStatus: 'Completed',
     devCompletion: 100,
-    sitStatus: 'Not Started',
+    sitStatus: 'PENDING CUSTOMER FOR DATA',
     sitCompletion: 0,
     uatStatus: 'Not Started',
     uatCompletion: 0,
@@ -172,13 +182,14 @@ export const initialKPIs: KPIInput[] = [
     customerDependencyStatus: 'None',
     revisedDevStatus: 'Not Started',
   },
+  // Row 11
   {
     category: 'Consumptions, Reversals, Revisions',
     name: 'Water Tariff',
     signoffStatus: 'Submitted',
     devStatus: 'In Progress',
     devCompletion: 75,
-    sitStatus: 'Not Started',
+    sitStatus: 'PENDING CUSTOMER FOR DATA',
     sitCompletion: 0,
     uatStatus: 'Not Started',
     uatCompletion: 0,
@@ -189,13 +200,14 @@ export const initialKPIs: KPIInput[] = [
     customerDependencyStatus: 'Dependent on revisions',
     revisedDevStatus: 'In Progress',
   },
+  // Row 12
   {
     category: 'Consumptions, Reversals, Revisions',
     name: 'Average Tariff',
     signoffStatus: 'Submitted',
     devStatus: 'Completed',
     devCompletion: 100,
-    sitStatus: 'Not Started',
+    sitStatus: 'PENDING CUSTOMER FOR DATA',
     sitCompletion: 0,
     uatStatus: 'Not Started',
     uatCompletion: 0,
@@ -206,13 +218,14 @@ export const initialKPIs: KPIInput[] = [
     customerDependencyStatus: 'None',
     revisedDevStatus: 'Not Started',
   },
+  // Row 13
   {
     category: 'Consumptions, Reversals, Revisions',
     name: 'FCDA',
     signoffStatus: 'Pending',
     devStatus: 'In Progress',
     devCompletion: 60,
-    sitStatus: 'Not Started',
+    sitStatus: 'PENDING CUSTOMER FOR DATA',
     sitCompletion: 0,
     uatStatus: 'Not Started',
     uatCompletion: 0,
@@ -223,6 +236,7 @@ export const initialKPIs: KPIInput[] = [
     customerDependencyStatus: 'Dependent on VAT',
     revisedDevStatus: 'In Progress',
   },
+  // Row 14
   {
     category: 'Consumptions, Reversals, Revisions',
     name: 'VAT',
@@ -240,13 +254,14 @@ export const initialKPIs: KPIInput[] = [
     customerDependencyStatus: 'None',
     revisedDevStatus: 'Not Started',
   },
+  // Row 15
   {
     category: 'Consumptions',
     name: 'Water Service Connections',
     signoffStatus: 'Submitted',
     devStatus: 'Completed',
     devCompletion: 100,
-    sitStatus: 'Not Started',
+    sitStatus: 'PENDING CUSTOMER FOR DATA',
     sitCompletion: 0,
     uatStatus: 'Not Started',
     uatCompletion: 0,
@@ -257,6 +272,7 @@ export const initialKPIs: KPIInput[] = [
     customerDependencyStatus: 'None',
     revisedDevStatus: 'Done',
   },
+  // Row 16
   {
     category: 'Consumptions, Reversals, Revisions',
     name: 'Water Billing',
@@ -274,13 +290,14 @@ export const initialKPIs: KPIInput[] = [
     customerDependencyStatus: 'PENDING CUSTOMER FOR DATA',
     revisedDevStatus: '?',
   },
+  // Row 17
   {
     category: 'Installations',
     name: 'Meter Changes',
     signoffStatus: 'Submitted',
     devStatus: 'Completed',
     devCompletion: 100,
-    sitStatus: 'Not Started',
+    sitStatus: 'PENDING CUSTOMER FOR DATA',
     sitCompletion: 0,
     uatStatus: 'Not Started',
     uatCompletion: 0,
@@ -291,14 +308,15 @@ export const initialKPIs: KPIInput[] = [
     customerDependencyStatus: 'PENDING CUSTOMER FOR DATA',
     revisedDevStatus: 'Done',
   },
+  // Row 18
   {
     category: 'Reversals',
     name: 'Reversals: Count',
     signoffStatus: 'Submitted',
     devStatus: 'Completed',
     devCompletion: 100,
-    sitStatus: 'Passed',
-    sitCompletion: 100,
+    sitStatus: 'PENDING CUSTOMER FOR DATA',
+    sitCompletion: 0,
     uatStatus: 'Not Started',
     uatCompletion: 0,
     prodStatus: 'Not Started',
@@ -308,6 +326,7 @@ export const initialKPIs: KPIInput[] = [
     customerDependencyStatus: 'Passed',
     revisedDevStatus: 'Passed',
   },
+  // Row 19
   {
     category: 'Reversals',
     name: 'Reversal: Billed Volume',
@@ -325,40 +344,43 @@ export const initialKPIs: KPIInput[] = [
     customerDependencyStatus: 'Passed',
     revisedDevStatus: 'Passed',
   },
+  // Row 20
   {
     category: 'Reversals',
     name: 'Reversal: Basic Revenue',
     signoffStatus: 'Submitted',
     devStatus: 'Completed',
     devCompletion: 100,
-    sitStatus: 'Passed',
-    sitCompletion: 100,
-    uatStatus: 'Can we put in UAT?',
+    sitStatus: 'PENDING CUSTOMER FOR DATA',
+    sitCompletion: 0,
+    uatStatus: 'Not Started',
     uatCompletion: 0,
-    prodStatus: 'Can we put in Prod?',
+    prodStatus: 'Not Started',
     prodCompletion: 0,
     owner: '',
     remarks: '',
     customerDependencyStatus: 'Passed',
     revisedDevStatus: 'Passed',
   },
+  // Row 21
   {
     category: 'Reversals',
     name: 'Reversal: Envi Revenue',
     signoffStatus: 'Submitted',
     devStatus: 'Completed',
     devCompletion: 100,
-    sitStatus: 'Passed',
-    sitCompletion: 100,
-    uatStatus: 'Can we put in UAT?',
+    sitStatus: 'PENDING CUSTOMER FOR DATA',
+    sitCompletion: 0,
+    uatStatus: 'Not Started',
     uatCompletion: 0,
-    prodStatus: 'Can we put in Prod?',
+    prodStatus: 'Not Started',
     prodCompletion: 0,
     owner: '',
     remarks: '',
     customerDependencyStatus: 'PENDING CUSTOMER FOR DATA',
     revisedDevStatus: 'Passed',
   },
+  // Row 22
   {
     category: 'Reversals',
     name: 'Reversal: Sewer Revenue',
@@ -376,30 +398,32 @@ export const initialKPIs: KPIInput[] = [
     customerDependencyStatus: 'PENDING CUSTOMER FOR DATA',
     revisedDevStatus: 'Passed',
   },
+  // Row 23
   {
     category: 'Reversals',
     name: 'Reversal: SC Discount',
     signoffStatus: 'Submitted',
     devStatus: 'Completed',
     devCompletion: 100,
-    sitStatus: 'Ready for SIT - until Sep',
-    sitCompletion: 0,
-    uatStatus: 'Not Started',
+    sitStatus: 'Passed',
+    sitCompletion: 100,
+    uatStatus: 'Can we put in UAT?',
     uatCompletion: 0,
-    prodStatus: 'Not Started',
+    prodStatus: 'Can we put in Prod?',
     prodCompletion: 0,
     owner: '',
     remarks: '',
     customerDependencyStatus: 'PENDING CUSTOMER FOR DATA',
     revisedDevStatus: 'Passed',
   },
+  // Row 24
   {
     category: 'Reversals',
     name: 'Reversal: FCDA',
     signoffStatus: 'Submitted',
     devStatus: 'Completed',
     devCompletion: 100,
-    sitStatus: 'Ready for SIT - until Sep',
+    sitStatus: 'PENDING CUSTOMER FOR DATA',
     sitCompletion: 0,
     uatStatus: 'Not Started',
     uatCompletion: 0,
@@ -410,13 +434,14 @@ export const initialKPIs: KPIInput[] = [
     customerDependencyStatus: 'PENDING CUSTOMER FOR DATA',
     revisedDevStatus: '?',
   },
+  // Row 25
   {
     category: 'Reversals',
     name: 'Reversal: VAT',
     signoffStatus: 'Submitted',
     devStatus: 'Completed',
     devCompletion: 100,
-    sitStatus: 'Ready for SIT - may Failed',
+    sitStatus: 'Not Started',
     sitCompletion: 0,
     uatStatus: 'Not Started',
     uatCompletion: 0,
@@ -427,23 +452,25 @@ export const initialKPIs: KPIInput[] = [
     customerDependencyStatus: 'PENDING CUSTOMER FOR DATA',
     revisedDevStatus: '?',
   },
+  // Row 26
   {
     category: 'Revisions',
     name: 'Revisions: Count',
     signoffStatus: 'Submitted',
     devStatus: 'In Progress',
     devCompletion: 80,
-    sitStatus: 'Not Started',
-    sitCompletion: 0,
-    uatStatus: 'Not Started',
+    sitStatus: 'Passed',
+    sitCompletion: 100,
+    uatStatus: 'Can we put in UAT?',
     uatCompletion: 0,
-    prodStatus: 'Not Started',
+    prodStatus: 'Can we put in Prod?',
     prodCompletion: 0,
     owner: '',
     remarks: 'Lawrance - (Revision + Reversal) Vat - revision flows',
     customerDependencyStatus: 'Dev Pending - Lawrance',
     revisedDevStatus: 'Not Started',
   },
+  // Row 27
   {
     category: 'Revisions',
     name: 'Revision: Billed Volume',
@@ -461,6 +488,7 @@ export const initialKPIs: KPIInput[] = [
     customerDependencyStatus: 'Passed',
     revisedDevStatus: 'Passed',
   },
+  // Row 28
   {
     category: 'Revisions',
     name: 'Revision: Basic Revenue',
@@ -478,6 +506,7 @@ export const initialKPIs: KPIInput[] = [
     customerDependencyStatus: 'Passed',
     revisedDevStatus: 'Passed',
   },
+  // Row 29
   {
     category: 'Revisions',
     name: 'Revision: Envi Revenue',
@@ -495,6 +524,7 @@ export const initialKPIs: KPIInput[] = [
     customerDependencyStatus: 'Passed',
     revisedDevStatus: 'Passed',
   },
+  // Row 30
   {
     category: 'Revisions',
     name: 'Revision: Sewer Revenue',
@@ -512,6 +542,7 @@ export const initialKPIs: KPIInput[] = [
     customerDependencyStatus: 'Passed',
     revisedDevStatus: 'Passed',
   },
+  // Row 31
   {
     category: 'Revisions',
     name: 'Revision: SC Discount',
@@ -529,6 +560,7 @@ export const initialKPIs: KPIInput[] = [
     customerDependencyStatus: 'Passed',
     revisedDevStatus: 'Passed',
   },
+  // Row 32
   {
     category: 'Revisions',
     name: 'Revision: FCDA',
@@ -546,23 +578,25 @@ export const initialKPIs: KPIInput[] = [
     customerDependencyStatus: 'Passed',
     revisedDevStatus: 'Passed',
   },
+  // Row 33
   {
     category: 'Revisions',
     name: 'Revision: VAT',
     signoffStatus: 'Submitted',
     devStatus: 'Completed',
     devCompletion: 100,
-    sitStatus: 'Passed',
-    sitCompletion: 100,
-    uatStatus: 'Can we put in UAT?',
+    sitStatus: 'Not Started',
+    sitCompletion: 0,
+    uatStatus: 'Not Started',
     uatCompletion: 0,
-    prodStatus: 'Can we put in Prod?',
+    prodStatus: 'Not Started',
     prodCompletion: 0,
     owner: '',
     remarks: 'map for GL accounts + (Build of reversal vat table - Lawrance)',
     customerDependencyStatus: 'Passed',
     revisedDevStatus: 'Passed',
   },
+  // Row 34
   {
     category: 'Other',
     name: 'Other/Misc Revenue Billing',
@@ -580,6 +614,7 @@ export const initialKPIs: KPIInput[] = [
     customerDependencyStatus: 'Not Started',
     revisedDevStatus: 'In Progress',
   },
+  // Row 35
   {
     category: 'Other',
     name: 'Other/Msc Revenue',
@@ -597,13 +632,14 @@ export const initialKPIs: KPIInput[] = [
     customerDependencyStatus: 'Not Started',
     revisedDevStatus: 'Onhold',
   },
+  // Row 36
   {
     category: 'Installations',
     name: 'Meter Ageing',
     signoffStatus: 'Submitted',
     devStatus: 'Completed',
     devCompletion: 100,
-    sitStatus: 'Not Started',
+    sitStatus: 'PENDING CUSTOMER FOR DATA',
     sitCompletion: 0,
     uatStatus: 'Not Started',
     uatCompletion: 0,
@@ -614,6 +650,7 @@ export const initialKPIs: KPIInput[] = [
     customerDependencyStatus: 'PENDING CUSTOMER FOR DATA',
     revisedDevStatus: 'Not Started',
   },
+  // Row 37
   {
     category: 'Other',
     name: 'Water Collection',
@@ -631,6 +668,7 @@ export const initialKPIs: KPIInput[] = [
     customerDependencyStatus: 'Not Started',
     revisedDevStatus: 'In Progress',
   },
+  // Row 38
   {
     category: 'Other',
     name: 'Other/Msc Collection',
@@ -648,6 +686,7 @@ export const initialKPIs: KPIInput[] = [
     customerDependencyStatus: 'Not Started',
     revisedDevStatus: 'In Progress',
   },
+  // Row 39
   {
     category: 'Other',
     name: 'ESG Report: Environment',
@@ -665,6 +704,7 @@ export const initialKPIs: KPIInput[] = [
     customerDependencyStatus: 'Not Started',
     revisedDevStatus: 'Not Started',
   },
+  // Row 40
   {
     category: 'Other',
     name: 'ESG Report: Environment',
@@ -682,6 +722,7 @@ export const initialKPIs: KPIInput[] = [
     customerDependencyStatus: 'Not Started',
     revisedDevStatus: 'Not Started',
   },
+  // Row 41
   {
     category: 'Other',
     name: 'ESG Report: Environment',
@@ -699,6 +740,7 @@ export const initialKPIs: KPIInput[] = [
     customerDependencyStatus: 'Not Started',
     revisedDevStatus: 'Not Started',
   },
+  // Row 42
   {
     category: 'Other',
     name: 'ESG Report: Social (Community)',
@@ -716,6 +758,7 @@ export const initialKPIs: KPIInput[] = [
     customerDependencyStatus: 'Not Started',
     revisedDevStatus: 'Not Started',
   },
+  // Row 43
   {
     category: 'Other',
     name: 'ESG Report: Social (Community)',
@@ -733,6 +776,7 @@ export const initialKPIs: KPIInput[] = [
     customerDependencyStatus: 'Not Started',
     revisedDevStatus: 'Not Started',
   },
+  // Row 44
   {
     category: 'Other',
     name: 'ESG Report: Social (Community)',
@@ -750,13 +794,14 @@ export const initialKPIs: KPIInput[] = [
     customerDependencyStatus: 'Not Started',
     revisedDevStatus: 'Not Started',
   },
+  // Row 45
   {
     category: 'Consumptions',
     name: 'WSC Bill Docs',
     signoffStatus: 'Submitted',
     devStatus: 'Completed',
     devCompletion: 100,
-    sitStatus: 'Not Started',
+    sitStatus: 'PENDING CUSTOMER FOR DATA',
     sitCompletion: 0,
     uatStatus: 'Not Started',
     uatCompletion: 0,
@@ -767,13 +812,14 @@ export const initialKPIs: KPIInput[] = [
     customerDependencyStatus: 'Failed',
     revisedDevStatus: 'Done',
   },
+  // Row 46
   {
     category: 'Other',
     name: 'Rate Code Changes',
     signoffStatus: 'Submitted',
     devStatus: 'Completed',
     devCompletion: 100,
-    sitStatus: 'Not Started',
+    sitStatus: 'PENDING CUSTOMER FOR DATA',
     sitCompletion: 0,
     uatStatus: 'Not Started',
     uatCompletion: 0,
