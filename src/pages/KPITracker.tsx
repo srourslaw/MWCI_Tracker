@@ -14,6 +14,11 @@ import {
   Upload,
   LineChart,
   Table,
+  ZoomIn,
+  ZoomOut,
+  Maximize2,
+  Filter,
+  X,
 } from 'lucide-react'
 import { kpiService } from '../services/kpiService'
 import { KPI, KPIInput } from '../types/kpi'
@@ -33,6 +38,18 @@ export default function KPITracker() {
   const [modalOpen, setModalOpen] = useState(false)
   const [importing, setImporting] = useState(false)
   const [viewMode, setViewMode] = useState<'table' | 'analytics'>('table')
+
+  // Zoom and Filter states
+  const [zoomLevel, setZoomLevel] = useState(100)
+  const [showFilters, setShowFilters] = useState(false)
+  const [filters, setFilters] = useState({
+    category: '',
+    devStatus: '',
+    sitStatus: '',
+    uatStatus: '',
+    prodStatus: '',
+    customerDependency: '',
+  })
 
   const isAdmin = user?.email === 'hussein.srour@thakralone.com'
 
@@ -157,14 +174,56 @@ export default function KPITracker() {
     }
   })
 
+  // Enhanced filtering logic
   const filteredKPIs = mergedKPIs.filter((kpi) => {
     const matchesSearch =
       kpi.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       kpi.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (kpi.owner && kpi.owner.toLowerCase().includes(searchQuery.toLowerCase()))
 
-    return matchesSearch
+    const matchesCategory = !filters.category || kpi.category === filters.category
+    const matchesDevStatus = !filters.devStatus || kpi.devStatus === filters.devStatus
+    const matchesSitStatus = !filters.sitStatus || kpi.sitStatus === filters.sitStatus
+    const matchesUatStatus = !filters.uatStatus || kpi.uatStatus === filters.uatStatus
+    const matchesProdStatus = !filters.prodStatus || kpi.prodStatus === filters.prodStatus
+    const matchesCustomerDependency = !filters.customerDependency || kpi.customerDependencyStatus === filters.customerDependency
+
+    return matchesSearch && matchesCategory && matchesDevStatus && matchesSitStatus && matchesUatStatus && matchesProdStatus && matchesCustomerDependency
   })
+
+  // Helper functions for zoom
+  const handleZoomIn = () => setZoomLevel(prev => Math.min(prev + 10, 200))
+  const handleZoomOut = () => setZoomLevel(prev => Math.max(prev - 10, 50))
+  const handleResetZoom = () => setZoomLevel(100)
+
+  // Helper to clear all filters
+  const clearAllFilters = () => {
+    setFilters({
+      category: '',
+      devStatus: '',
+      sitStatus: '',
+      uatStatus: '',
+      prodStatus: '',
+      customerDependency: '',
+    })
+    setSearchQuery('')
+  }
+
+  // Helper to remove individual filter
+  const removeFilter = (key: keyof typeof filters) => {
+    setFilters(prev => ({ ...prev, [key]: '' }))
+  }
+
+  // Get unique values for filter dropdowns
+  const uniqueCategories = Array.from(new Set(mergedKPIs.map(kpi => kpi.category))).sort()
+  const uniqueDevStatuses = Array.from(new Set(mergedKPIs.map(kpi => kpi.devStatus))).sort()
+  const uniqueSitStatuses = Array.from(new Set(mergedKPIs.map(kpi => kpi.sitStatus))).sort()
+  const uniqueUatStatuses = Array.from(new Set(mergedKPIs.map(kpi => kpi.uatStatus))).sort()
+  const uniqueProdStatuses = Array.from(new Set(mergedKPIs.map(kpi => kpi.prodStatus))).sort()
+  const uniqueCustomerDeps = Array.from(new Set(mergedKPIs.map(kpi => kpi.customerDependencyStatus || 'None'))).sort()
+
+  // Count active filters
+  const activeFiltersCount = Object.values(filters).filter(v => v !== '').length + (searchQuery ? 1 : 0)
 
   // Group KPIs by category
   const groupedKPIs = filteredKPIs.reduce((acc, kpi) => {
@@ -392,6 +451,62 @@ export default function KPITracker() {
               </motion.button>
             </div>
 
+            {/* Zoom Controls */}
+            {viewMode === 'table' && (
+              <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-lg px-3 py-2 shadow-sm">
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={handleZoomOut}
+                  className="p-1 hover:bg-slate-100 rounded transition"
+                  title="Zoom Out"
+                >
+                  <ZoomOut className="w-4 h-4 text-slate-600" />
+                </motion.button>
+                <span className="text-xs font-medium text-slate-700 min-w-[45px] text-center">{zoomLevel}%</span>
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={handleZoomIn}
+                  className="p-1 hover:bg-slate-100 rounded transition"
+                  title="Zoom In"
+                >
+                  <ZoomIn className="w-4 h-4 text-slate-600" />
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={handleResetZoom}
+                  className="p-1 hover:bg-slate-100 rounded transition ml-1"
+                  title="Reset Zoom"
+                >
+                  <Maximize2 className="w-4 h-4 text-slate-600" />
+                </motion.button>
+              </div>
+            )}
+
+            {/* Filter Toggle Button */}
+            {viewMode === 'table' && (
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setShowFilters(!showFilters)}
+                className={`px-4 py-2 rounded-lg transition shadow-sm flex items-center gap-2 ${
+                  showFilters || activeFiltersCount > 0
+                    ? 'bg-gradient-to-r from-sky-500 to-blue-600 text-white'
+                    : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
+                }`}
+              >
+                <Filter className="w-4 h-4" />
+                Filters
+                {activeFiltersCount > 0 && (
+                  <span className="px-2 py-0.5 bg-white/20 rounded-full text-xs font-bold">
+                    {activeFiltersCount}
+                  </span>
+                )}
+              </motion.button>
+            )}
+
             {isAdmin && (
               <>
                 <motion.button
@@ -418,6 +533,189 @@ export default function KPITracker() {
           </div>
         </motion.div>
 
+        {/* Filter Panel */}
+        {viewMode === 'table' && showFilters && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3 }}
+            className="glass-morphism rounded-2xl p-6"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                <Filter className="w-5 h-5 text-sky-600" />
+                Advanced Filters
+              </h3>
+              {activeFiltersCount > 0 && (
+                <button
+                  onClick={clearAllFilters}
+                  className="text-sm text-red-600 hover:text-red-700 font-medium flex items-center gap-1"
+                >
+                  <X className="w-4 h-4" />
+                  Clear All
+                </button>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Category</label>
+                <select
+                  value={filters.category}
+                  onChange={(e) => setFilters(prev => ({ ...prev, category: e.target.value }))}
+                  className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500 transition"
+                >
+                  <option value="">All Categories</option>
+                  {uniqueCategories.map(cat => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Dev Status</label>
+                <select
+                  value={filters.devStatus}
+                  onChange={(e) => setFilters(prev => ({ ...prev, devStatus: e.target.value }))}
+                  className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500 transition"
+                >
+                  <option value="">All Dev Statuses</option>
+                  {uniqueDevStatuses.map(status => (
+                    <option key={status} value={status}>{status}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">SIT Status</label>
+                <select
+                  value={filters.sitStatus}
+                  onChange={(e) => setFilters(prev => ({ ...prev, sitStatus: e.target.value }))}
+                  className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500 transition"
+                >
+                  <option value="">All SIT Statuses</option>
+                  {uniqueSitStatuses.map(status => (
+                    <option key={status} value={status}>{status}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">UAT Status</label>
+                <select
+                  value={filters.uatStatus}
+                  onChange={(e) => setFilters(prev => ({ ...prev, uatStatus: e.target.value }))}
+                  className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500 transition"
+                >
+                  <option value="">All UAT Statuses</option>
+                  {uniqueUatStatuses.map(status => (
+                    <option key={status} value={status}>{status}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">PROD Status</label>
+                <select
+                  value={filters.prodStatus}
+                  onChange={(e) => setFilters(prev => ({ ...prev, prodStatus: e.target.value }))}
+                  className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500 transition"
+                >
+                  <option value="">All PROD Statuses</option>
+                  {uniqueProdStatuses.map(status => (
+                    <option key={status} value={status}>{status}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Customer Dependency</label>
+                <select
+                  value={filters.customerDependency}
+                  onChange={(e) => setFilters(prev => ({ ...prev, customerDependency: e.target.value }))}
+                  className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500 transition"
+                >
+                  <option value="">All Dependencies</option>
+                  {uniqueCustomerDeps.map(dep => (
+                    <option key={dep} value={dep}>{dep}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Active Filter Chips */}
+            {activeFiltersCount > 0 && (
+              <div className="mt-4 pt-4 border-t border-slate-200">
+                <p className="text-xs font-medium text-slate-600 mb-2">Active Filters:</p>
+                <div className="flex flex-wrap gap-2">
+                  {searchQuery && (
+                    <span className="inline-flex items-center gap-1 px-3 py-1 bg-sky-100 text-sky-700 rounded-full text-xs font-medium">
+                      Search: "{searchQuery}"
+                      <button onClick={() => setSearchQuery('')} className="hover:bg-sky-200 rounded-full p-0.5">
+                        <X className="w-3 h-3" />
+                      </button>
+                    </span>
+                  )}
+                  {filters.category && (
+                    <span className="inline-flex items-center gap-1 px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">
+                      Category: {filters.category}
+                      <button onClick={() => removeFilter('category')} className="hover:bg-purple-200 rounded-full p-0.5">
+                        <X className="w-3 h-3" />
+                      </button>
+                    </span>
+                  )}
+                  {filters.devStatus && (
+                    <span className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
+                      Dev: {filters.devStatus}
+                      <button onClick={() => removeFilter('devStatus')} className="hover:bg-blue-200 rounded-full p-0.5">
+                        <X className="w-3 h-3" />
+                      </button>
+                    </span>
+                  )}
+                  {filters.sitStatus && (
+                    <span className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
+                      SIT: {filters.sitStatus}
+                      <button onClick={() => removeFilter('sitStatus')} className="hover:bg-green-200 rounded-full p-0.5">
+                        <X className="w-3 h-3" />
+                      </button>
+                    </span>
+                  )}
+                  {filters.uatStatus && (
+                    <span className="inline-flex items-center gap-1 px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-medium">
+                      UAT: {filters.uatStatus}
+                      <button onClick={() => removeFilter('uatStatus')} className="hover:bg-amber-200 rounded-full p-0.5">
+                        <X className="w-3 h-3" />
+                      </button>
+                    </span>
+                  )}
+                  {filters.prodStatus && (
+                    <span className="inline-flex items-center gap-1 px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium">
+                      PROD: {filters.prodStatus}
+                      <button onClick={() => removeFilter('prodStatus')} className="hover:bg-red-200 rounded-full p-0.5">
+                        <X className="w-3 h-3" />
+                      </button>
+                    </span>
+                  )}
+                  {filters.customerDependency && (
+                    <span className="inline-flex items-center gap-1 px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-medium">
+                      Dependency: {filters.customerDependency}
+                      <button onClick={() => removeFilter('customerDependency')} className="hover:bg-orange-200 rounded-full p-0.5">
+                        <X className="w-3 h-3" />
+                      </button>
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Results Count */}
+            <div className="mt-4 text-sm text-slate-600">
+              Showing <span className="font-bold text-sky-600">{filteredKPIs.length}</span> of <span className="font-bold">{mergedKPIs.length}</span> KPIs
+            </div>
+          </motion.div>
+        )}
+
         {/* Content Area - Table or Analytics */}
         {viewMode === 'analytics' ? (
           <KPIAnalytics kpis={mergedKPIs} />
@@ -427,6 +725,11 @@ export default function KPITracker() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
             className="glass-morphism rounded-2xl p-6 overflow-x-auto"
+            style={{
+              transform: `scale(${zoomLevel / 100})`,
+              transformOrigin: 'top left',
+              width: `${100 / (zoomLevel / 100)}%`
+            }}
           >
             {loading || importing ? (
               <div className="text-center py-12">
