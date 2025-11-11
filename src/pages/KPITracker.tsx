@@ -724,16 +724,18 @@ export default function KPITracker() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
-            className="glass-morphism rounded-2xl p-6"
+            className="glass-morphism rounded-2xl overflow-hidden"
           >
-            <div
-              className="overflow-x-auto"
-              style={{
-                transform: `scale(${zoomLevel / 100})`,
-                transformOrigin: 'top left',
-                transition: 'transform 0.2s ease-out'
-              }}
-            >
+            <div className="overflow-auto max-h-[calc(100vh-300px)]" style={{ padding: '24px' }}>
+              <div
+                style={{
+                  transform: `scale(${zoomLevel / 100})`,
+                  transformOrigin: 'top left',
+                  transition: 'transform 0.2s ease-out',
+                  width: `${100 / (zoomLevel / 100)}%`,
+                  height: `${100 / (zoomLevel / 100)}%`
+                }}
+              >
             {loading || importing ? (
               <div className="text-center py-12">
                 <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-sky-500 mx-auto"></div>
@@ -957,6 +959,7 @@ export default function KPITracker() {
               </tbody>
             </table>
             )}
+              </div>
             </div>
           </motion.div>
         )}
