@@ -55,8 +55,16 @@ export default function EditableCell({
       return (
         <select
           value={editValue.toString()}
-          onChange={(e) => setEditValue(e.target.value)}
-          onBlur={handleSave}
+          onChange={(e) => {
+            const newValue = e.target.value
+            setEditValue(newValue)
+            // Save immediately on change for dropdowns
+            if (newValue !== value) {
+              onSave(newValue)
+            }
+            setIsEditing(false)
+          }}
+          onBlur={() => setIsEditing(false)}
           onKeyDown={handleKeyDown}
           autoFocus
           className={`w-full px-2 py-1 text-sm border-2 border-sky-500 focus:outline-none ${textColor}`}
