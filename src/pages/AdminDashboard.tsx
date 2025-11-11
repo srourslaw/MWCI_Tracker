@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../hooks/useAuth'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
   LogOut,
@@ -11,7 +11,8 @@ import {
   TrendingUp,
   Activity,
   BarChart3,
-  Calendar
+  Calendar,
+  BarChart2
 } from 'lucide-react'
 import { taskService } from '../services/taskService'
 import { Task } from '../types/task'
@@ -125,6 +126,13 @@ export default function AdminDashboard() {
               </div>
             </div>
             <div className="flex items-center gap-4">
+              <Link
+                to="/kpi-tracker"
+                className="flex items-center gap-2 px-4 py-2 bg-sky-50 hover:bg-sky-100 text-sky-700 rounded-lg transition font-medium text-sm"
+              >
+                <BarChart2 className="w-4 h-4" />
+                KPI Tracker
+              </Link>
               <div className="flex items-center gap-3 px-4 py-2 glass-morphism rounded-lg">
                 <Shield className="w-5 h-5 text-orange-600" />
                 <span className="text-slate-700 text-sm font-semibold">Administrator</span>

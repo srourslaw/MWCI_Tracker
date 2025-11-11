@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../hooks/useAuth'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
   LogOut,
@@ -12,7 +12,8 @@ import {
   Plus,
   Calendar,
   Edit,
-  Trash2
+  Trash2,
+  BarChart2
 } from 'lucide-react'
 import { taskService } from '../services/taskService'
 import { Task, TaskInput } from '../types/task'
@@ -118,6 +119,13 @@ export default function Dashboard() {
               </div>
             </div>
             <div className="flex items-center gap-4">
+              <Link
+                to="/kpi-tracker"
+                className="flex items-center gap-2 px-4 py-2 bg-sky-50 hover:bg-sky-100 text-sky-700 rounded-lg transition font-medium text-sm"
+              >
+                <BarChart2 className="w-4 h-4" />
+                KPI Tracker
+              </Link>
               <div className="flex items-center gap-3 px-4 py-2 glass-morphism rounded-lg">
                 <User className="w-5 h-5 text-sky-600" />
                 <span className="text-slate-700 text-sm">{user?.email}</span>
