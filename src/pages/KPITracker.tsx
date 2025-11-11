@@ -594,7 +594,7 @@ export default function KPITracker() {
                             value={kpi.sitStatus}
                             onSave={(v) => handleUpdateField(kpi.id, 'sitStatus', v)}
                             type="select"
-                            options={['Not Started', 'Pending', 'In Progress', 'Passed', 'Failed', 'Can we put in UAT?', 'Can we put in Prod?', 'Ready for SIT - until Sep', 'Ready for SIT - may Failed', 'PENDING CUSTOMER FOR DATA']}
+                            options={['Not Started', 'Pending', 'In Progress', 'Inprogress', 'Passed', 'Failed', 'Can we put in UAT?', 'Can we put in Prod?', 'Ready for SIT - until Sep', 'Ready for SIT - may Failed', 'PENDING CUSTOMER FOR DATA']}
                             bgColor={getCellBgColor(kpi.sitStatus, 'sitStatus')}
                             textColor={kpi.sitStatus?.includes('PENDING') ? 'text-white' : 'text-slate-800'}
                             editable={isAdmin}
@@ -605,7 +605,7 @@ export default function KPITracker() {
                             value={kpi.uatStatus}
                             onSave={(v) => handleUpdateField(kpi.id, 'uatStatus', v)}
                             type="select"
-                            options={['Not Started', 'Pending', 'In Progress', 'Passed', 'Failed', 'Can we put in UAT?', 'Can we put in Prod?']}
+                            options={['Not Started', 'Pending', 'In Progress', 'Inprogress', 'Passed', 'Failed', 'Can we put in UAT?', 'Can we put in Prod?']}
                             bgColor={getCellBgColor(kpi.uatStatus, 'uatStatus')}
                             textColor={kpi.uatStatus?.includes('PENDING') ? 'text-white' : 'text-slate-800'}
                             editable={isAdmin}
@@ -616,7 +616,7 @@ export default function KPITracker() {
                             value={kpi.prodStatus}
                             onSave={(v) => handleUpdateField(kpi.id, 'prodStatus', v)}
                             type="select"
-                            options={['Not Started', 'Pending', 'In Progress', 'Passed', 'Failed', 'Can we put in UAT?', 'Can we put in Prod?']}
+                            options={['Not Started', 'Pending', 'In Progress', 'Inprogress', 'Passed', 'Failed', 'Can we put in UAT?', 'Can we put in Prod?']}
                             bgColor={getCellBgColor(kpi.prodStatus, 'prodStatus')}
                             textColor={kpi.prodStatus?.includes('PENDING') ? 'text-white' : 'text-slate-800'}
                             editable={isAdmin}

@@ -19,6 +19,7 @@ export type TestingStatus =
   | 'Not Started'
   | 'Pending'
   | 'In Progress'
+  | 'Inprogress'
   | 'Passed'
   | 'Failed'
   | 'Can we put in UAT?'
