@@ -851,6 +851,28 @@ export default function KPITracker() {
                           <EditableCell
                             value={kpi.owner || ''}
                             onSave={(v) => handleUpdateField(kpi.id, 'owner', v)}
+                            type="select"
+                            options={[
+                              '',
+                              'Joy Cata - Project Manager',
+                              'Francis Ferdinand Dizon - Solution / Data Architect',
+                              'Joliver Macatuggal - Business Analyst',
+                              'Joshua John I. Gutierrez - DE',
+                              'Regie Langomes - Senior DE',
+                              'John Lawrence Abuzo - DE',
+                              'Ferdinand Joseph J. Pimentel - DE',
+                              'Alexander James C. Gutierrez - DE',
+                              'Gernan C. Elgarico - Dev 4 - Senior DE',
+                              'Jojo B. Ramal - Senior Tester',
+                              'Windy M. Taghoy - Junior Tester',
+                              'Mallaiah Jatla - SAP ISU Consultant',
+                              'Manoj Kachhap - Azure Platform Admin',
+                              'Petros Moutsopoulos - ASAPIO Consultant',
+                              'Mac Brian Mann - Country Managing Director',
+                              'Carlos Castro - Finance Head',
+                              'Hussein Srour - Project Governance',
+                              'Mauro Scarpa - Project Director',
+                            ]}
                             editable={isAdmin}
                           />
                         </td>
