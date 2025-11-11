@@ -6,9 +6,48 @@ export type KPICategory =
   | 'Installations'
   | 'Other'
 
-export type DevStatus = 'Not Started' | 'In Progress' | 'Ready for SIT' | 'Completed' | 'Onhold'
-export type TestingStatus = 'Not Started' | 'Pending' | 'In Progress' | 'Passed' | 'Failed'
+export type DevStatus =
+  | 'Not Started'
+  | 'In Progress'
+  | 'Ready for SIT'
+  | 'Ready for SIT - until Sep'
+  | 'Ready for SIT - may Failed'
+  | 'Completed'
+  | 'Onhold'
+
+export type TestingStatus =
+  | 'Not Started'
+  | 'Pending'
+  | 'In Progress'
+  | 'Passed'
+  | 'Failed'
+  | 'Can we put in UAT?'
+  | 'Can we put in Prod?'
+
 export type SignoffStatus = 'Pending' | 'Submitted' | 'Approved'
+
+export type CustomerDependencyStatus =
+  | 'None'
+  | 'PENDING CUSTOMER FOR DATA'
+  | 'Inprogress'
+  | 'Not Started'
+  | 'Done'
+  | 'Passed'
+  | 'Failed'
+  | 'Dev Pending - Lawrance'
+  | 'Dependent on revisions'
+  | 'Dependent on VAT'
+  | string
+
+export type RevisedDevStatus =
+  | 'Not Started'
+  | 'In Progress'
+  | 'Completed'
+  | 'Passed'
+  | 'Failed'
+  | 'Done'
+  | '?'
+  | string
 
 export interface KPI {
   id: string
@@ -28,11 +67,20 @@ export interface KPI {
   prodStatus: TestingStatus
   prodCompletion: number // 0-100
 
-  // Details
+  // Excel-specific fields
   owner?: string
   remarks?: string
+  remarksDate?: string // e.g., "10/11"
   customerDependency?: string
+  customerDependencyStatus?: CustomerDependencyStatus
+  customerDependencyDate?: string // e.g., "11-Nov"
+  revisedDevStatus?: RevisedDevStatus
+  revisedDevStatusDate?: string // e.g., "11-Nov"
   targetDate?: string
+
+  // Additional details
+  specificDetails?: string // For detailed remarks/notes
+  jiraTicket?: string
 
   // Metadata
   createdAt: Date

@@ -5,7 +5,7 @@ export const initialKPIs: KPIInput[] = [
   // Consumptions Category
   {
     category: 'Consumptions',
-    name: 'Consumption Summary',
+    name: 'Gross Billed Volume (Gross Consumption)',
     signoffStatus: 'Submitted',
     devStatus: 'Completed',
     devCompletion: 100,
@@ -15,9 +15,14 @@ export const initialKPIs: KPIInput[] = [
     uatCompletion: 0,
     prodStatus: 'Not Started',
     prodCompletion: 0,
-    owner: 'Team',
-    remarks: 'Basic consumption tracking',
+    owner: '',
+    remarks: 'Further review required by DE team',
+    remarksDate: '10/11',
     customerDependency: '',
+    customerDependencyStatus: 'PENDING CUSTOMER FOR DATA',
+    customerDependencyDate: '11-Nov',
+    revisedDevStatus: 'Passed',
+    revisedDevStatusDate: '11-Nov',
     targetDate: '',
   },
   {

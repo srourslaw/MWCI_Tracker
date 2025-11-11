@@ -26,8 +26,15 @@ export default function KPIModal({ isOpen, onClose, onSubmit, kpi, mode }: KPIMo
     prodCompletion: 0,
     owner: '',
     remarks: '',
+    remarksDate: '',
     customerDependency: '',
+    customerDependencyStatus: 'None',
+    customerDependencyDate: '',
+    revisedDevStatus: 'Not Started',
+    revisedDevStatusDate: '',
     targetDate: '',
+    specificDetails: '',
+    jiraTicket: '',
   })
 
   const [submitting, setSubmitting] = useState(false)
@@ -48,8 +55,15 @@ export default function KPIModal({ isOpen, onClose, onSubmit, kpi, mode }: KPIMo
         prodCompletion: kpi.prodCompletion,
         owner: kpi.owner || '',
         remarks: kpi.remarks || '',
+        remarksDate: kpi.remarksDate || '',
         customerDependency: kpi.customerDependency || '',
+        customerDependencyStatus: kpi.customerDependencyStatus || 'None',
+        customerDependencyDate: kpi.customerDependencyDate || '',
+        revisedDevStatus: kpi.revisedDevStatus || 'Not Started',
+        revisedDevStatusDate: kpi.revisedDevStatusDate || '',
         targetDate: kpi.targetDate || '',
+        specificDetails: kpi.specificDetails || '',
+        jiraTicket: kpi.jiraTicket || '',
       })
     } else {
       setFormData({
@@ -66,8 +80,15 @@ export default function KPIModal({ isOpen, onClose, onSubmit, kpi, mode }: KPIMo
         prodCompletion: 0,
         owner: '',
         remarks: '',
+        remarksDate: '',
         customerDependency: '',
+        customerDependencyStatus: 'None',
+        customerDependencyDate: '',
+        revisedDevStatus: 'Not Started',
+        revisedDevStatusDate: '',
         targetDate: '',
+        specificDetails: '',
+        jiraTicket: '',
       })
     }
   }, [kpi, mode, isOpen])
