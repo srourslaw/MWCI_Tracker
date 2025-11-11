@@ -12,6 +12,8 @@ import {
   Clock,
   CheckCircle2,
   Upload,
+  LineChart,
+  Table,
 } from 'lucide-react'
 import { kpiService } from '../services/kpiService'
 import { KPI, KPIInput } from '../types/kpi'
@@ -20,6 +22,7 @@ import KPIModal from '../components/KPIModal'
 import EditableCell from '../components/EditableCell'
 import { importInitialKPIs } from '../utils/importKPIs'
 import { initialKPIs } from '../data/initialKPIs'
+import KPIAnalytics from '../components/KPIAnalytics'
 
 export default function KPITracker() {
   const { user, logout } = useAuth()
@@ -29,6 +32,7 @@ export default function KPITracker() {
   const [searchQuery, setSearchQuery] = useState('')
   const [modalOpen, setModalOpen] = useState(false)
   const [importing, setImporting] = useState(false)
+  const [viewMode, setViewMode] = useState<'table' | 'analytics'>('table')
 
   const isAdmin = user?.email === 'hussein.srour@thakralone.com'
 
@@ -358,6 +362,36 @@ export default function KPITracker() {
               />
             </div>
 
+            {/* View Mode Toggle */}
+            <div className="flex bg-white border border-slate-200 rounded-lg overflow-hidden shadow-sm">
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setViewMode('table')}
+                className={`px-4 py-2 flex items-center gap-2 transition ${
+                  viewMode === 'table'
+                    ? 'bg-gradient-to-r from-sky-500 to-blue-600 text-white'
+                    : 'text-slate-600 hover:bg-slate-50'
+                }`}
+              >
+                <Table className="w-4 h-4" />
+                Table
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setViewMode('analytics')}
+                className={`px-4 py-2 flex items-center gap-2 transition ${
+                  viewMode === 'analytics'
+                    ? 'bg-gradient-to-r from-sky-500 to-blue-600 text-white'
+                    : 'text-slate-600 hover:bg-slate-50'
+                }`}
+              >
+                <LineChart className="w-4 h-4" />
+                Analytics
+              </motion.button>
+            </div>
+
             {isAdmin && (
               <>
                 <motion.button
@@ -384,21 +418,24 @@ export default function KPITracker() {
           </div>
         </motion.div>
 
-        {/* Excel-Style Table */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="glass-morphism rounded-2xl p-6 overflow-x-auto"
-        >
-          {loading || importing ? (
-            <div className="text-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-sky-500 mx-auto"></div>
-              <p className="text-slate-600 mt-4">
-                {importing ? 'Importing initial KPI data...' : 'Loading KPIs...'}
-              </p>
-            </div>
-          ) : (
+        {/* Content Area - Table or Analytics */}
+        {viewMode === 'analytics' ? (
+          <KPIAnalytics kpis={mergedKPIs} />
+        ) : (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="glass-morphism rounded-2xl p-6 overflow-x-auto"
+          >
+            {loading || importing ? (
+              <div className="text-center py-12">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-sky-500 mx-auto"></div>
+                <p className="text-slate-600 mt-4">
+                  {importing ? 'Importing initial KPI data...' : 'Loading KPIs...'}
+                </p>
+              </div>
+            ) : (
             <table className="w-full border-collapse text-xs">
               <thead>
                 {/* Row 1: TARGET ECC - 1B */}
@@ -591,8 +628,9 @@ export default function KPITracker() {
                 ))}
               </tbody>
             </table>
-          )}
-        </motion.div>
+            )}
+          </motion.div>
+        )}
       </main>
 
       {/* KPI Modal */}
