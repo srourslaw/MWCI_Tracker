@@ -46,6 +46,30 @@ export default function KPITracker() {
     return () => unsubscribe()
   }, [])
 
+  // Auto-import initial data on first load
+  useEffect(() => {
+    const autoImport = async () => {
+      if (kpis.length === 0 && !loading && user && !importing) {
+        const hasImported = localStorage.getItem('kpisImported')
+        if (!hasImported) {
+          console.log('Auto-importing initial KPI data...')
+          setImporting(true)
+          try {
+            const result = await importInitialKPIs(user.uid)
+            console.log(`Auto-import complete: ${result.success} successful, ${result.failed} failed`)
+            localStorage.setItem('kpisImported', 'true')
+          } catch (error) {
+            console.error('Auto-import failed:', error)
+          } finally {
+            setImporting(false)
+          }
+        }
+      }
+    }
+
+    autoImport()
+  }, [kpis.length, loading, user, importing])
+
   const handleLogout = async () => {
     try {
       await logout()
@@ -324,10 +348,12 @@ export default function KPITracker() {
           transition={{ delay: 0.5 }}
           className="glass-morphism rounded-2xl p-6 overflow-x-auto"
         >
-          {loading ? (
+          {loading || importing ? (
             <div className="text-center py-12">
               <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-sky-500 mx-auto"></div>
-              <p className="text-slate-600 mt-4">Loading KPIs...</p>
+              <p className="text-slate-600 mt-4">
+                {importing ? 'Importing initial KPI data...' : 'Loading KPIs...'}
+              </p>
             </div>
           ) : (
             <table className="w-full border-collapse text-xs">
