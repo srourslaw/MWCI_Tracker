@@ -104,7 +104,21 @@ export default function KPITracker() {
     return acc
   }, {} as Record<string, KPI[]>)
 
-  // Calculate overall progress
+  // Calculate dynamic percentages from actual data
+  const calculateCompletionPercentage = (field: 'devStatus' | 'sitStatus' | 'uatStatus' | 'prodStatus') => {
+    if (kpis.length === 0) return 0
+
+    const completedStatuses = ['Completed', 'Passed']
+    const completed = kpis.filter(kpi => completedStatuses.includes(kpi[field])).length
+    return Math.round((completed / kpis.length) * 100)
+  }
+
+  const devCompletionPercent = calculateCompletionPercentage('devStatus')
+  const sitCompletionPercent = calculateCompletionPercentage('sitStatus')
+  const uatCompletionPercent = calculateCompletionPercentage('uatStatus')
+  const prodCompletionPercent = calculateCompletionPercentage('prodStatus')
+
+  // Calculate overall progress for stats cards
   const avgDevProgress = kpis.length > 0
     ? Math.round(kpis.reduce((sum, kpi) => sum + kpi.devCompletion, 0) / kpis.length)
     : 0
@@ -163,7 +177,9 @@ export default function KPITracker() {
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-slate-800">KPI Tracker - ECC BI Report Monitoring</h1>
-                <p className="text-sm text-slate-600">TARGET ECC - 1B | 85% DEV Completion | 26% SIT Completion</p>
+                <p className="text-sm text-slate-600">
+                  TARGET ECC - 1B | {devCompletionPercent}% DEV Completion | {sitCompletionPercent}% SIT Completion | {uatCompletionPercent}% UAT | {prodCompletionPercent}% PROD
+                </p>
               </div>
             </div>
             <div className="flex items-center gap-4">
@@ -316,36 +332,84 @@ export default function KPITracker() {
           ) : (
             <table className="w-full border-collapse text-xs">
               <thead>
+                {/* Row 1: TARGET ECC - 1B */}
+                <tr>
+                  <th colSpan={11} className="border border-slate-300 p-2 text-center font-bold bg-blue-200">
+                    TARGET ECC - 1B
+                  </th>
+                </tr>
+
+                {/* Row 2: Main Headers with Percentages */}
                 <tr className="bg-slate-100">
                   <th className="border border-slate-300 p-2 text-left font-bold sticky left-0 bg-slate-100 z-10">
-                    KPI Relationship<br />BI Report KPIs<br />(Phase 1c - ECC Sep 30)
+                    KPI Relationship
                   </th>
                   <th className="border border-slate-300 p-2 text-center font-bold" style={{ backgroundColor: '#90EE90' }}>
-                    Customer<br />Signoff on FSD<br />Status
+                    BI Report KPIs<br />(Phase 1c - ECC Sep 30)
+                  </th>
+                  <th className="border border-slate-300 p-2 text-center font-bold" style={{ backgroundColor: '#90EE90' }}>
+                    Customer Signoff on FSD
                   </th>
                   <th className="border border-slate-300 p-2 text-center font-bold" style={{ backgroundColor: '#90EE90' }}>
                     Owner
                   </th>
                   <th className="border border-slate-300 p-2 text-center font-bold" style={{ backgroundColor: '#90EE90' }}>
-                    85%<br />DEV - ECC<br />Completion
+                    {devCompletionPercent}%
                   </th>
                   <th className="border border-slate-300 p-2 text-center font-bold" style={{ backgroundColor: '#90EE90' }}>
                     Remarks 10/11
                   </th>
                   <th className="border border-slate-300 p-2 text-center font-bold" style={{ backgroundColor: '#FF8C00', color: 'white' }}>
-                    Customer Dependency<br />11-Nov
+                    Customer Dependency
                   </th>
                   <th className="border border-slate-300 p-2 text-center font-bold" style={{ backgroundColor: '#90EE90' }}>
-                    Revised Dev Status<br />11-Nov
+                    Revised Dev Status
                   </th>
                   <th className="border border-slate-300 p-2 text-center font-bold" style={{ backgroundColor: '#32CD32', color: 'white' }}>
-                    26%<br />Testing - SIT - ECC<br />Completion
+                    {sitCompletionPercent}%
                   </th>
                   <th className="border border-slate-300 p-2 text-center font-bold" style={{ backgroundColor: '#32CD32', color: 'white' }}>
-                    0%<br />UAT - ECC<br />Completion
+                    {uatCompletionPercent}%
                   </th>
                   <th className="border border-slate-300 p-2 text-center font-bold" style={{ backgroundColor: '#32CD32', color: 'white' }}>
-                    0%<br />PROD - ECC<br />Completion
+                    {prodCompletionPercent}%
+                  </th>
+                </tr>
+
+                {/* Row 3: Sub-Headers */}
+                <tr className="bg-slate-50">
+                  <th className="border border-slate-300 p-2 text-center font-semibold text-xs sticky left-0 bg-slate-50 z-10">
+                    {/* Empty for KPI Relationship */}
+                  </th>
+                  <th className="border border-slate-300 p-2 text-center font-semibold text-xs">
+                    {/* Empty for BI Report KPIs */}
+                  </th>
+                  <th className="border border-slate-300 p-2 text-center font-semibold text-xs" style={{ backgroundColor: '#E8F5E9' }}>
+                    Status
+                  </th>
+                  <th className="border border-slate-300 p-2 text-center font-semibold text-xs" style={{ backgroundColor: '#E8F5E9' }}>
+                    {/* Empty for Owner */}
+                  </th>
+                  <th className="border border-slate-300 p-2 text-center font-semibold text-xs" style={{ backgroundColor: '#E8F5E9' }}>
+                    DEV - ECC<br />Completion
+                  </th>
+                  <th className="border border-slate-300 p-2 text-center font-semibold text-xs" style={{ backgroundColor: '#E8F5E9' }}>
+                    {/* Empty for Remarks */}
+                  </th>
+                  <th className="border border-slate-300 p-2 text-center font-semibold text-xs" style={{ backgroundColor: '#FFE0B2' }}>
+                    11-Nov
+                  </th>
+                  <th className="border border-slate-300 p-2 text-center font-semibold text-xs" style={{ backgroundColor: '#E8F5E9' }}>
+                    11-Nov
+                  </th>
+                  <th className="border border-slate-300 p-2 text-center font-semibold text-xs" style={{ backgroundColor: '#C8E6C9' }}>
+                    Testing - SIT - ECC<br />Completion
+                  </th>
+                  <th className="border border-slate-300 p-2 text-center font-semibold text-xs" style={{ backgroundColor: '#C8E6C9' }}>
+                    UAT - ECC<br />Completion
+                  </th>
+                  <th className="border border-slate-300 p-2 text-center font-semibold text-xs" style={{ backgroundColor: '#C8E6C9' }}>
+                    PROD - ECC<br />Completion
                   </th>
                 </tr>
               </thead>
@@ -354,7 +418,7 @@ export default function KPITracker() {
                   <>
                     {/* Category Header */}
                     <tr key={`category-${category}`} className="bg-blue-100">
-                      <td colSpan={10} className="border border-slate-300 p-2 font-bold text-left">
+                      <td colSpan={11} className="border border-slate-300 p-2 font-bold text-left">
                         {category}
                       </td>
                     </tr>
@@ -362,6 +426,11 @@ export default function KPITracker() {
                     {categoryKPIs.map((kpi) => (
                       <tr key={kpi.id} className="hover:bg-slate-50 transition">
                         <td className="border border-slate-300 p-1 sticky left-0 bg-white z-10">
+                          <div className="text-xs text-slate-600 font-medium px-2 py-1">
+                            {category}
+                          </div>
+                        </td>
+                        <td className="border border-slate-300 p-1 bg-white">
                           <EditableCell
                             value={kpi.name}
                             onSave={(v) => handleUpdateField(kpi.id, 'name', v)}
