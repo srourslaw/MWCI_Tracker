@@ -108,34 +108,34 @@ export default function AdminDashboard() {
   }))
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-sky-50 via-blue-50 to-white">
       {/* Header */}
-      <header className="glass-morphism border-b border-white/10">
+      <header className="glass-morphism border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-gradient-to-br from-orange-500 to-red-500 rounded-lg">
+              <div className="p-2 bg-gradient-to-br from-orange-500 to-red-500 rounded-lg shadow-lg">
                 <Shield className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-white">Admin Dashboard</h1>
-                <p className="text-sm text-purple-200">Full System Overview</p>
+                <h1 className="text-2xl font-bold text-slate-800">Admin Dashboard</h1>
+                <p className="text-sm text-slate-600">Full System Overview</p>
               </div>
             </div>
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-3 px-4 py-2 glass-morphism rounded-lg">
-                <Shield className="w-5 h-5 text-orange-300" />
-                <span className="text-white text-sm font-semibold">Administrator</span>
+                <Shield className="w-5 h-5 text-orange-600" />
+                <span className="text-slate-700 text-sm font-semibold">Administrator</span>
               </div>
               <div className="flex items-center gap-3 px-4 py-2 glass-morphism rounded-lg">
-                <User className="w-5 h-5 text-purple-300" />
-                <span className="text-white text-sm">{user?.email}</span>
+                <User className="w-5 h-5 text-sky-600" />
+                <span className="text-slate-700 text-sm">{user?.email}</span>
               </div>
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={handleLogout}
-                className="p-2 bg-red-500/20 hover:bg-red-500/30 text-red-300 rounded-lg transition"
+                className="p-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg transition"
               >
                 <LogOut className="w-5 h-5" />
               </motion.button>
@@ -152,10 +152,10 @@ export default function AdminDashboard() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <h2 className="text-3xl font-bold text-white mb-2">
+          <h2 className="text-3xl font-bold text-slate-800 mb-2">
             Welcome, Administrator!
           </h2>
-          <p className="text-purple-200">Complete overview of all projects and team activities.</p>
+          <p className="text-slate-600">Complete overview of all projects and team activities.</p>
         </motion.div>
 
         {/* Stats Grid */}
@@ -169,12 +169,12 @@ export default function AdminDashboard() {
               className="glass-morphism rounded-2xl p-6"
             >
               <div className="flex items-center justify-between mb-4">
-                <div className={`p-3 bg-gradient-to-br ${stat.color} rounded-xl`}>
+                <div className={`p-3 bg-gradient-to-br ${stat.color} rounded-xl shadow-md`}>
                   <stat.icon className="w-6 h-6 text-white" />
                 </div>
               </div>
-              <p className="text-purple-200 text-sm mb-1">{stat.label}</p>
-              <p className="text-3xl font-bold text-white">{stat.value}</p>
+              <p className="text-slate-600 text-sm mb-1">{stat.label}</p>
+              <p className="text-3xl font-bold text-slate-800">{stat.value}</p>
             </motion.div>
           ))}
         </div>
@@ -188,14 +188,14 @@ export default function AdminDashboard() {
             className="glass-morphism rounded-2xl p-6"
           >
             <div className="flex items-center gap-3 mb-6">
-              <Users className="w-6 h-6 text-purple-400" />
-              <h3 className="text-2xl font-bold text-white">Team Members</h3>
+              <Users className="w-6 h-6 text-sky-600" />
+              <h3 className="text-2xl font-bold text-slate-800">Team Members</h3>
             </div>
 
             {loading ? (
               <div className="text-center py-12">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500 mx-auto"></div>
-                <p className="text-purple-200 mt-4">Loading team data...</p>
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-sky-500 mx-auto"></div>
+                <p className="text-slate-600 mt-4">Loading team data...</p>
               </div>
             ) : teamMembers.length > 0 ? (
               <div className="space-y-4">
@@ -205,20 +205,20 @@ export default function AdminDashboard() {
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.5 + index * 0.1 }}
-                    className="bg-white/5 border border-white/10 rounded-xl p-4 hover:bg-white/10 transition"
+                    className="bg-white border border-slate-200 rounded-xl p-4 hover:shadow-md transition"
                   >
                     <div className="flex items-center justify-between">
                       <div>
-                        <h4 className="text-white font-semibold">{member.email.split('@')[0]}</h4>
-                        <p className="text-purple-200 text-sm">{member.email}</p>
+                        <h4 className="text-slate-800 font-semibold">{member.email.split('@')[0]}</h4>
+                        <p className="text-slate-600 text-sm">{member.email}</p>
                       </div>
                       <div className="text-right">
-                        <p className="text-white font-semibold">{member.completed}/{member.tasks}</p>
-                        <p className="text-purple-200 text-sm">Tasks</p>
+                        <p className="text-slate-800 font-semibold">{member.completed}/{member.tasks}</p>
+                        <p className="text-slate-600 text-sm">Tasks</p>
                       </div>
                     </div>
                     <div className="mt-3">
-                      <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
+                      <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
                         <motion.div
                           initial={{ width: 0 }}
                           animate={{ width: `${member.tasks > 0 ? (member.completed / member.tasks) * 100 : 0}%` }}
@@ -232,7 +232,7 @@ export default function AdminDashboard() {
               </div>
             ) : (
               <div className="text-center py-12">
-                <p className="text-purple-200">No team members yet</p>
+                <p className="text-slate-600">No team members yet</p>
               </div>
             )}
           </motion.div>
@@ -245,14 +245,14 @@ export default function AdminDashboard() {
             className="glass-morphism rounded-2xl p-6"
           >
             <div className="flex items-center gap-3 mb-6">
-              <BarChart3 className="w-6 h-6 text-purple-400" />
-              <h3 className="text-2xl font-bold text-white">Recent Activity</h3>
+              <BarChart3 className="w-6 h-6 text-sky-600" />
+              <h3 className="text-2xl font-bold text-slate-800">Recent Activity</h3>
             </div>
 
             {loading ? (
               <div className="text-center py-12">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500 mx-auto"></div>
-                <p className="text-purple-200 mt-4">Loading activities...</p>
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-sky-500 mx-auto"></div>
+                <p className="text-slate-600 mt-4">Loading activities...</p>
               </div>
             ) : recentActivities.length > 0 ? (
               <div className="space-y-4">
@@ -262,17 +262,17 @@ export default function AdminDashboard() {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.6 + index * 0.1 }}
-                  className="bg-white/5 border border-white/10 rounded-xl p-4 hover:bg-white/10 transition"
+                  className="bg-white border border-slate-200 rounded-xl p-4 hover:shadow-md transition"
                 >
                   <div className="flex items-start justify-between">
                     <div>
-                      <p className="text-white">
+                      <p className="text-slate-800">
                         <span className="font-semibold">{activity.user}</span>
-                        {' '}<span className="text-purple-200">{activity.action}</span>
+                        {' '}<span className="text-slate-600">{activity.action}</span>
                       </p>
-                      <p className="text-purple-300 text-sm mt-1">{activity.task}</p>
+                      <p className="text-sky-600 text-sm mt-1">{activity.task}</p>
                     </div>
-                    <div className="flex items-center gap-2 text-purple-200 text-xs">
+                    <div className="flex items-center gap-2 text-slate-500 text-xs">
                       <Calendar className="w-3 h-3" />
                       {activity.time}
                     </div>
@@ -282,7 +282,7 @@ export default function AdminDashboard() {
               </div>
             ) : (
               <div className="text-center py-12">
-                <p className="text-purple-200">No recent activities</p>
+                <p className="text-slate-600">No recent activities</p>
               </div>
             )}
           </motion.div>

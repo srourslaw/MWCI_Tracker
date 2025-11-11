@@ -92,14 +92,14 @@ export default function TaskModal({ isOpen, onClose, onSubmit, task, mode }: Tas
             >
               {/* Header */}
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-white">
+                <h2 className="text-2xl font-bold text-slate-800">
                   {mode === 'create' ? 'Create New Task' : 'Edit Task'}
                 </h2>
                 <button
                   onClick={onClose}
                   className="p-2 hover:bg-white/10 rounded-lg transition"
                 >
-                  <X className="w-5 h-5 text-purple-200" />
+                  <X className="w-5 h-5 text-slate-600" />
                 </button>
               </div>
 
@@ -108,7 +108,7 @@ export default function TaskModal({ isOpen, onClose, onSubmit, task, mode }: Tas
                 <motion.div
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  className="mb-4 p-3 bg-red-500/10 border border-red-500/50 rounded-lg flex items-center gap-2 text-red-300 text-sm"
+                  className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-700 text-sm"
                 >
                   <AlertCircle className="w-4 h-4" />
                   <span>{error}</span>
@@ -119,14 +119,14 @@ export default function TaskModal({ isOpen, onClose, onSubmit, task, mode }: Tas
               <form onSubmit={handleSubmit} className="space-y-4">
                 {/* Title */}
                 <div>
-                  <label className="block text-sm font-medium text-purple-200 mb-2">
+                  <label className="block text-sm font-medium text-slate-600 mb-2">
                     Task Title *
                   </label>
                   <input
                     type="text"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
+                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition"
                     placeholder="Enter task title"
                     required
                   />
@@ -134,15 +134,15 @@ export default function TaskModal({ isOpen, onClose, onSubmit, task, mode }: Tas
 
                 {/* Description */}
                 <div>
-                  <label className="block text-sm font-medium text-purple-200 mb-2">
+                  <label className="block text-sm font-medium text-slate-600 mb-2">
                     Description
                   </label>
                   <div className="relative">
-                    <FileText className="absolute left-3 top-3 text-purple-300 w-5 h-5" />
+                    <FileText className="absolute left-3 top-3 text-sky-500 w-5 h-5" />
                     <textarea
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
-                      className="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition resize-none"
+                      className="w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition resize-none"
                       placeholder="Add task description (optional)"
                       rows={3}
                     />
@@ -151,16 +151,16 @@ export default function TaskModal({ isOpen, onClose, onSubmit, task, mode }: Tas
 
                 {/* Date */}
                 <div>
-                  <label className="block text-sm font-medium text-purple-200 mb-2">
+                  <label className="block text-sm font-medium text-slate-600 mb-2">
                     Due Date *
                   </label>
                   <div className="relative">
-                    <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-300 w-5 h-5" />
+                    <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-sky-500 w-5 h-5" />
                     <input
                       type="date"
                       value={date}
                       onChange={(e) => setDate(e.target.value)}
-                      className="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
+                      className="w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition"
                       required
                     />
                   </div>
@@ -168,13 +168,13 @@ export default function TaskModal({ isOpen, onClose, onSubmit, task, mode }: Tas
 
                 {/* Status */}
                 <div>
-                  <label className="block text-sm font-medium text-purple-200 mb-2">
+                  <label className="block text-sm font-medium text-slate-600 mb-2">
                     Status
                   </label>
                   <select
                     value={status}
                     onChange={(e) => setStatus(e.target.value as any)}
-                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
+                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition"
                   >
                     <option value="pending" className="bg-slate-800">Pending</option>
                     <option value="in-progress" className="bg-slate-800">In Progress</option>
@@ -187,14 +187,14 @@ export default function TaskModal({ isOpen, onClose, onSubmit, task, mode }: Tas
                   <button
                     type="button"
                     onClick={onClose}
-                    className="flex-1 py-3 px-4 bg-white/5 hover:bg-white/10 text-white font-semibold rounded-lg transition"
+                    className="flex-1 py-3 px-4 bg-white hover:bg-white/10 text-slate-800 font-semibold rounded-lg transition"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={loading}
-                    className="flex-1 py-3 px-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold rounded-lg hover:from-purple-600 hover:to-pink-600 focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                    className="flex-1 py-3 px-4 bg-gradient-to-r from-sky-500 to-blue-600 text-slate-800 font-semibold rounded-lg hover:from-purple-600 hover:to-pink-600 focus:outline-none focus:ring-2 focus:ring-sky-500 disabled:opacity-50 disabled:cursor-not-allowed transition"
                   >
                     {loading ? 'Saving...' : mode === 'create' ? 'Create Task' : 'Update Task'}
                   </button>
