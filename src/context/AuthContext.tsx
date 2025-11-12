@@ -105,12 +105,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Create user
     const userCredential = await createUserWithEmailAndPassword(auth, email, password)
 
-    // Send email verification
-    try {
-      await sendEmailVerification(userCredential.user)
-      logger.log('Verification email sent to:', email)
-    } catch (error) {
-      logger.error('Failed to send verification email:', error)
+    // Only send verification email to @manilawater.com users
+    // @thakralone.com users are auto-approved and don't need verification
+    if (domain === 'manilawater.com') {
+      try {
+        await sendEmailVerification(userCredential.user)
+        logger.log('Verification email sent to:', email)
+      } catch (error) {
+        logger.error('Failed to send verification email:', error)
+        // Don't throw - user is created, just log the error
+      }
+    } else {
+      logger.log('Skipping email verification for trusted domain:', email)
     }
 
     // Create user profile
