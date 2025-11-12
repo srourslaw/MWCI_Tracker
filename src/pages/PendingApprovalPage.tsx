@@ -67,7 +67,12 @@ export default function PendingApprovalPage({ userProfile }: Props) {
     setResendSuccess(false)
 
     try {
-      await sendEmailVerification(auth.currentUser)
+      // Configure the email verification to redirect back to our app
+      const actionCodeSettings = {
+        url: window.location.origin + '/login?verified=true',
+        handleCodeInApp: false,
+      }
+      await sendEmailVerification(auth.currentUser, actionCodeSettings)
       setResendSuccess(true)
       logger.log('Verification email resent to:', auth.currentUser.email)
 

@@ -1,7 +1,7 @@
-import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
-import { LogIn, Mail, Lock, AlertCircle } from 'lucide-react'
+import { LogIn, Mail, Lock, AlertCircle, CheckCircle } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { getUserProfile } from '../services/userService'
 import { createTwoFactorCode, send2FACodeEmail } from '../services/twoFactorService'
@@ -13,8 +13,31 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const { login } = useAuth()
+  const [verificationSuccess, setVerificationSuccess] = useState(false)
+  const { login, user } = useAuth()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+
+  // Check if user just verified their email
+  useEffect(() => {
+    const verified = searchParams.get('verified')
+    if (verified === 'true') {
+      setVerificationSuccess(true)
+      logger.log('User returned from email verification')
+
+      // If user is already logged in and verified, auto-redirect
+      if (user && auth.currentUser?.emailVerified) {
+        logger.log('User verified and logged in, redirecting to dashboard...')
+        setTimeout(() => {
+          if (user.email === 'hussein.srour@thakralone.com') {
+            navigate('/admin')
+          } else {
+            navigate('/dashboard')
+          }
+        }, 2000) // Give user 2 seconds to see the success message
+      }
+    }
+  }, [searchParams, user, navigate])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -100,6 +123,22 @@ export default function LoginPage() {
           className="glass-morphism rounded-2xl p-8 shadow-xl"
         >
           <h2 className="text-2xl font-bold text-slate-800 mb-6">Welcome Back</h2>
+
+          {verificationSuccess && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center gap-3 text-green-700"
+            >
+              <CheckCircle className="w-5 h-5 flex-shrink-0" />
+              <div>
+                <p className="font-semibold">Email Verified Successfully!</p>
+                <p className="text-sm text-green-600 mt-1">
+                  {user ? 'Redirecting you to your dashboard...' : 'You can now sign in with your account.'}
+                </p>
+              </div>
+            </motion.div>
+          )}
 
           {error && (
             <motion.div

@@ -81,7 +81,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(firebaseUser)
 
       if (firebaseUser) {
-        await loadUserProfile(firebaseUser)
+        // IMPORTANT: Reload user state to get latest email verification status
+        // This ensures that when users return from clicking the verification link,
+        // we immediately detect their verified status without manual refresh
+        try {
+          await firebaseUser.reload()
+          // Get the updated user object after reload
+          const updatedUser = auth.currentUser
+          if (updatedUser) {
+            setUser(updatedUser)
+            await loadUserProfile(updatedUser)
+          }
+        } catch (error) {
+          logger.error('Error reloading user:', error)
+          // Fallback to loading profile with existing user data
+          await loadUserProfile(firebaseUser)
+        }
       } else {
         setUserProfile(null)
       }
@@ -108,7 +123,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // SECURITY: Send verification email to ALL users (both domains)
     // This ensures they actually own the email address
     try {
-      await sendEmailVerification(userCredential.user)
+      // Configure the email verification to redirect back to our app
+      const actionCodeSettings = {
+        url: window.location.origin + '/login?verified=true',
+        handleCodeInApp: false,
+      }
+      await sendEmailVerification(userCredential.user, actionCodeSettings)
       logger.log('Verification email sent to:', email)
     } catch (error) {
       logger.error('Failed to send verification email:', error)
