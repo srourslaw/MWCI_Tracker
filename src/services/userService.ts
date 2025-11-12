@@ -37,13 +37,16 @@ export const getInitialApprovalStatus = (
   // Other domains are rejected
   if (domain === 'other') return 'rejected'
 
-  // @thakralone.com users are auto-approved after email verification
-  if (domain === 'thakralone.com' && emailVerified) return 'approved'
+  // @thakralone.com users are ALWAYS auto-approved (internal team)
+  // No email verification required - trusted domain
+  if (domain === 'thakralone.com') return 'approved'
 
-  // @manilawater.com users need admin approval
-  if (domain === 'manilawater.com' && emailVerified) return 'pending'
+  // @manilawater.com users need email verification AND admin approval
+  if (domain === 'manilawater.com') {
+    return emailVerified ? 'pending' : 'pending'
+  }
 
-  // Default to pending until email is verified
+  // Default to pending
   return 'pending'
 }
 
@@ -58,25 +61,25 @@ export const createUserProfile = async (
 ): Promise<UserProfile> => {
   const domain = getUserDomain(email)
 
-  // Special handling for admin - always approved regardless of email verification
-  const isAdmin = email === 'hussein.srour@thakralone.com'
+  // All @thakralone.com users are auto-approved (trusted internal team)
+  const isTrustedDomain = domain === 'thakralone.com'
 
-  const approvalStatus = isAdmin ? 'approved' : getInitialApprovalStatus(domain, emailVerified)
+  const approvalStatus = getInitialApprovalStatus(domain, emailVerified)
 
   const userProfile: UserProfile = {
     uid,
     email,
     displayName,
-    emailVerified: isAdmin ? true : emailVerified, // Admin always marked as verified
+    emailVerified,
     approvalStatus,
     domain,
     createdAt: new Date(),
     lastLoginAt: new Date(),
   }
 
-  // Auto-approve admin or @thakralone.com users with verified email
-  if (isAdmin || (domain === 'thakralone.com' && emailVerified)) {
-    userProfile.approvedBy = isAdmin ? 'system-admin' : 'system'
+  // Auto-approve all @thakralone.com users (internal team)
+  if (isTrustedDomain) {
+    userProfile.approvedBy = 'system'
     userProfile.approvedAt = new Date()
   }
 
@@ -152,20 +155,20 @@ export const updateEmailVerificationStatus = async (
       return
     }
 
-    // Admin always approved
-    const isAdmin = profile.email === 'hussein.srour@thakralone.com'
-    const newApprovalStatus = isAdmin
+    // All @thakralone.com users are always approved (trusted domain)
+    const isTrustedDomain = profile.domain === 'thakralone.com'
+    const newApprovalStatus = isTrustedDomain
       ? 'approved'
       : getInitialApprovalStatus(profile.domain, emailVerified)
 
     const updates: any = {
-      emailVerified: isAdmin ? true : emailVerified,
+      emailVerified,
       approvalStatus: newApprovalStatus,
     }
 
-    // Auto-approve admin or @thakralone.com users when email is verified
-    if (isAdmin || (profile.domain === 'thakralone.com' && emailVerified)) {
-      updates.approvedBy = isAdmin ? 'system-admin' : 'system'
+    // Auto-approve all @thakralone.com users (internal team)
+    if (isTrustedDomain) {
+      updates.approvedBy = 'system'
       updates.approvedAt = Timestamp.now()
     }
 
@@ -305,9 +308,10 @@ export const getAllUsers = async (): Promise<UserProfile[]> => {
 export const isUserApproved = (profile: UserProfile | null): boolean => {
   if (!profile) return false
 
-  // Admin always approved regardless of verification status
-  if (profile.email === 'hussein.srour@thakralone.com') return true
+  // All @thakralone.com users are approved (internal team)
+  if (profile.domain === 'thakralone.com') return true
 
+  // @manilawater.com users need email verification AND admin approval
   return profile.emailVerified && profile.approvalStatus === 'approved'
 }
 
