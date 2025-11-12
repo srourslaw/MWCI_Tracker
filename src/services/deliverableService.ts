@@ -111,7 +111,7 @@ class DeliverableService {
   async updateBug(
     deliverableId: string,
     bugId: string,
-    bugUpdates: Partial<Bug>,
+    _bugUpdates: Partial<Bug>,
     userId: string
   ): Promise<void> {
     try {

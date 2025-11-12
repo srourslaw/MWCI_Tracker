@@ -11,7 +11,6 @@ import {
   CheckCircle2,
   Clock,
   Filter,
-  X,
   Upload
 } from 'lucide-react'
 import { deliverableService } from '../services/deliverableService'
