@@ -12,7 +12,11 @@ import {
   Activity,
   BarChart3,
   Calendar,
-  BarChart2
+  BarChart2,
+  CheckCircle,
+  Clock,
+  XCircle,
+  Mail
 } from 'lucide-react'
 import { taskService } from '../services/taskService'
 import { Task } from '../types/task'
@@ -20,6 +24,8 @@ import { getTeamMemberName, TEAM_MEMBERS } from '../data/teamMembers'
 import TeamDirectory from '../components/TeamDirectory'
 import ColumnPermissionsManager from '../components/ColumnPermissionsManager'
 import UserApprovalDashboard from '../components/UserApprovalDashboard'
+import { getAllUsers } from '../services/userService'
+import { UserProfile } from '../types/user'
 import { logger } from '../utils/logger'
 
 interface TeamMember {
@@ -40,6 +46,8 @@ export default function AdminDashboard() {
     completionRate: '0%',
   })
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([])
+  const [allUsers, setAllUsers] = useState<UserProfile[]>([])
+  const [loadingUsers, setLoadingUsers] = useState(true)
 
   useEffect(() => {
     // Subscribe to all tasks
@@ -89,6 +97,17 @@ export default function AdminDashboard() {
     return () => unsubscribe()
   }, [])
 
+  // Fetch all registered users
+  useEffect(() => {
+    const fetchUsers = async () => {
+      setLoadingUsers(true)
+      const users = await getAllUsers()
+      setAllUsers(users)
+      setLoadingUsers(false)
+    }
+    fetchUsers()
+  }, [])
+
   const handleLogout = async () => {
     try {
       await logout()
@@ -112,6 +131,60 @@ export default function AdminDashboard() {
     task: task.title,
     time: new Date(task.updatedAt).toLocaleString(),
   }))
+
+  // Helper functions for user status display
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'approved':
+        return CheckCircle
+      case 'pending':
+        return Clock
+      case 'rejected':
+        return XCircle
+      default:
+        return User
+    }
+  }
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'approved':
+        return 'bg-green-100 text-green-700'
+      case 'pending':
+        return 'bg-amber-100 text-amber-700'
+      case 'rejected':
+        return 'bg-red-100 text-red-700'
+      default:
+        return 'bg-slate-100 text-slate-700'
+    }
+  }
+
+  const getDomainColor = (domain: string) => {
+    if (domain === 'thakralone.com') return 'from-purple-500 to-pink-500'
+    if (domain === 'manilawater.com') return 'from-blue-500 to-cyan-500'
+    return 'from-slate-500 to-slate-600'
+  }
+
+  const getDomainBadgeColor = (domain: string) => {
+    if (domain === 'thakralone.com') return 'bg-purple-100 text-purple-700'
+    if (domain === 'manilawater.com') return 'bg-blue-100 text-blue-700'
+    return 'bg-slate-100 text-slate-700'
+  }
+
+  const formatLastLogin = (date?: Date) => {
+    if (!date) return 'Never'
+    const now = new Date()
+    const diff = now.getTime() - date.getTime()
+    const minutes = Math.floor(diff / 60000)
+    const hours = Math.floor(diff / 3600000)
+    const days = Math.floor(diff / 86400000)
+
+    if (minutes < 1) return 'Just now'
+    if (minutes < 60) return `${minutes}m ago`
+    if (hours < 24) return `${hours}h ago`
+    if (days < 7) return `${days}d ago`
+    return date.toLocaleDateString()
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-sky-50 via-blue-50 to-white">
@@ -309,6 +382,161 @@ export default function AdminDashboard() {
           className="mt-8"
         >
           <UserApprovalDashboard adminEmail={user?.email || ''} />
+        </motion.div>
+
+        {/* Registered Users Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.65 }}
+          className="mt-8 glass-morphism rounded-2xl p-6"
+        >
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2 bg-gradient-to-br from-sky-500 to-blue-600 rounded-lg">
+              <Users className="w-6 h-6 text-white" />
+            </div>
+            <div className="flex-1">
+              <h2 className="text-xl font-bold text-slate-800">Registered Users</h2>
+              <p className="text-sm text-slate-600">
+                All users who have registered on the platform
+              </p>
+            </div>
+            {!loadingUsers && (
+              <div className="px-3 py-1.5 bg-sky-100 text-sky-700 rounded-full font-semibold text-sm">
+                {allUsers.length} total
+              </div>
+            )}
+          </div>
+
+          {loadingUsers ? (
+            <div className="text-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-sky-500 mx-auto"></div>
+              <p className="text-slate-600 mt-4">Loading users...</p>
+            </div>
+          ) : allUsers.length === 0 ? (
+            <div className="text-center py-12">
+              <Users className="w-16 h-16 text-slate-400 mx-auto mb-4" />
+              <p className="text-slate-800 font-semibold text-lg">No Users Yet</p>
+              <p className="text-slate-600 text-sm mt-2">
+                Users will appear here once they register
+              </p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b-2 border-slate-200">
+                    <th className="text-left py-3 px-4 text-slate-700 font-semibold">User</th>
+                    <th className="text-left py-3 px-4 text-slate-700 font-semibold">Email</th>
+                    <th className="text-left py-3 px-4 text-slate-700 font-semibold">Domain</th>
+                    <th className="text-left py-3 px-4 text-slate-700 font-semibold">Status</th>
+                    <th className="text-left py-3 px-4 text-slate-700 font-semibold">Email Verified</th>
+                    <th className="text-left py-3 px-4 text-slate-700 font-semibold">Last Login</th>
+                    <th className="text-left py-3 px-4 text-slate-700 font-semibold">Registered</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {allUsers.map((userProfile, index) => {
+                    const StatusIcon = getStatusIcon(userProfile.approvalStatus)
+                    return (
+                      <motion.tr
+                        key={userProfile.uid}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.05 }}
+                        className="border-b border-slate-100 hover:bg-slate-50 transition"
+                      >
+                        {/* Avatar + Name */}
+                        <td className="py-4 px-4">
+                          <div className="flex items-center gap-3">
+                            <div
+                              className={`flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br ${getDomainColor(
+                                userProfile.domain
+                              )} flex items-center justify-center text-white font-bold text-sm shadow-md`}
+                            >
+                              {userProfile.displayName
+                                ? userProfile.displayName
+                                    .split(' ')
+                                    .map((n) => n[0])
+                                    .join('')
+                                    .slice(0, 2)
+                                : userProfile.email[0].toUpperCase()}
+                            </div>
+                            <div>
+                              <p className="text-slate-800 font-semibold">
+                                {userProfile.displayName || 'New User'}
+                              </p>
+                            </div>
+                          </div>
+                        </td>
+
+                        {/* Email */}
+                        <td className="py-4 px-4">
+                          <div className="flex items-center gap-2 text-slate-600 text-sm">
+                            <Mail className="w-4 h-4 flex-shrink-0" />
+                            <span className="truncate max-w-xs">{userProfile.email}</span>
+                          </div>
+                        </td>
+
+                        {/* Domain */}
+                        <td className="py-4 px-4">
+                          <span
+                            className={`px-2 py-1 ${getDomainBadgeColor(
+                              userProfile.domain
+                            )} text-xs font-semibold rounded`}
+                          >
+                            @{userProfile.domain}
+                          </span>
+                        </td>
+
+                        {/* Approval Status */}
+                        <td className="py-4 px-4">
+                          <span
+                            className={`inline-flex items-center gap-1.5 px-2.5 py-1 ${getStatusColor(
+                              userProfile.approvalStatus
+                            )} text-xs font-semibold rounded`}
+                          >
+                            <StatusIcon className="w-3.5 h-3.5" />
+                            {userProfile.approvalStatus.charAt(0).toUpperCase() +
+                              userProfile.approvalStatus.slice(1)}
+                          </span>
+                        </td>
+
+                        {/* Email Verified */}
+                        <td className="py-4 px-4">
+                          {userProfile.emailVerified ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded">
+                              <CheckCircle className="w-3 h-3" />
+                              Verified
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 px-2 py-1 bg-amber-100 text-amber-700 text-xs font-semibold rounded">
+                              <Clock className="w-3 h-3" />
+                              Pending
+                            </span>
+                          )}
+                        </td>
+
+                        {/* Last Login */}
+                        <td className="py-4 px-4">
+                          <span className="text-slate-600 text-sm">
+                            {formatLastLogin(userProfile.lastLoginAt)}
+                          </span>
+                        </td>
+
+                        {/* Registration Date */}
+                        <td className="py-4 px-4">
+                          <div className="text-slate-600 text-sm">
+                            {userProfile.createdAt.toLocaleDateString()}
+                          </div>
+                        </td>
+                      </motion.tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
         </motion.div>
 
         {/* Team Directory Section */}
