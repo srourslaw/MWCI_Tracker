@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
-import { LogIn, Mail, Lock, AlertCircle, CheckCircle, Send } from 'lucide-react'
+import { LogIn, Mail, Lock, AlertCircle, CheckCircle } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { getUserProfile } from '../services/userService'
 import { createTwoFactorCode, send2FACodeEmail } from '../services/twoFactorService'
-import { sendEmailVerification } from 'firebase/auth'
 import { auth } from '../firebase'
 import { logger } from '../utils/logger'
 
@@ -15,8 +14,6 @@ export default function LoginPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [verificationSuccess, setVerificationSuccess] = useState(false)
-  const [sendingTestEmail, setSendingTestEmail] = useState(false)
-  const [testEmailSent, setTestEmailSent] = useState(false)
   const { login } = useAuth()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
@@ -108,36 +105,6 @@ export default function LoginPage() {
       setError(err.message || 'Failed to sign in')
     } finally {
       setLoading(false)
-    }
-  }
-
-  // Test helper function to send verification email to currently logged in user
-  const handleSendTestVerificationEmail = async () => {
-    if (!auth.currentUser) {
-      alert('Please sign in first to test verification emails')
-      return
-    }
-
-    setSendingTestEmail(true)
-    setTestEmailSent(false)
-
-    try {
-      const actionCodeSettings = {
-        url: window.location.origin + '/login?verified=true',
-        handleCodeInApp: false,
-      }
-      await sendEmailVerification(auth.currentUser, actionCodeSettings)
-      setTestEmailSent(true)
-      logger.log('📧 Test verification email sent to:', auth.currentUser.email)
-
-      setTimeout(() => {
-        setTestEmailSent(false)
-      }, 5000)
-    } catch (error: any) {
-      logger.error('Failed to send test email:', error)
-      alert('Failed to send test email: ' + error.message)
-    } finally {
-      setSendingTestEmail(false)
     }
   }
 
@@ -272,37 +239,6 @@ export default function LoginPage() {
               </Link>
             </p>
           </div>
-
-          {/* Test Helper - Only show if user is logged in */}
-          {auth.currentUser && (
-            <div className="mt-6 pt-6 border-t border-slate-200">
-              <p className="text-xs text-slate-500 text-center mb-3">
-                🧪 Test Helper (logged in as: {auth.currentUser.email})
-              </p>
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={handleSendTestVerificationEmail}
-                disabled={sendingTestEmail}
-                className="w-full py-2 px-4 bg-gradient-to-r from-purple-500 to-indigo-600 text-white text-sm font-semibold rounded-lg hover:from-purple-600 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition shadow-md flex items-center justify-center gap-2"
-              >
-                <Send className="w-4 h-4" />
-                {sendingTestEmail ? 'Sending...' : 'Send Test Verification Email'}
-              </motion.button>
-              {testEmailSent && (
-                <motion.p
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="text-xs text-green-600 text-center mt-2"
-                >
-                  ✅ Test email sent! Check your inbox and click the verification link.
-                </motion.p>
-              )}
-              <p className="text-xs text-slate-400 text-center mt-2">
-                This will send a verification email with the auto-redirect configured.
-              </p>
-            </div>
-          )}
         </motion.div>
       </motion.div>
 
