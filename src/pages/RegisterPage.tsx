@@ -230,31 +230,38 @@ export default function RegisterPage() {
                 <div>
                   <h3 className="font-bold text-green-900 text-lg">Account Created Successfully!</h3>
                   <p className="text-green-700 text-sm">
-                    {email.endsWith('@thakralone.com')
-                      ? 'You can login immediately - no verification needed!'
-                      : 'Check your email to verify your account'}
+                    Check your email to verify your account
                   </p>
                 </div>
               </div>
 
               {email.endsWith('@thakralone.com') ? (
-                // @thakralone.com users - instant access
+                // @thakralone.com users - verify email then auto-approved
                 <>
                   <div className="bg-white rounded-lg p-4 mb-4">
                     <p className="text-slate-700 text-sm leading-relaxed">
-                      Welcome to the team! Your account <strong>{email}</strong> has been automatically approved.
-                      You can login immediately and start using the dashboard.
+                      We've sent a verification email to <strong>{email}</strong>.
+                      Please click the verification link in your email to activate your account.
                     </p>
                   </div>
 
                   <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-4">
                     <p className="text-purple-800 text-sm font-semibold mb-2">
-                      ✨ Instant Access for Internal Team
+                      ✨ Auto-Approval for Internal Team
                     </p>
                     <p className="text-purple-700 text-xs">
-                      As a <strong>@thakralone.com</strong> team member, your account is automatically approved.
-                      No email verification required - just login and start working!
+                      As a <strong>@thakralone.com</strong> team member, your account will be automatically
+                      approved once you verify your email. No administrator approval needed!
                     </p>
+                  </div>
+
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                    <p className="text-blue-800 text-sm font-semibold mb-2">Next Steps:</p>
+                    <ol className="text-blue-700 text-sm space-y-1 list-decimal list-inside">
+                      <li>Check your inbox (and spam folder) for the verification email</li>
+                      <li>Click the verification link in the email</li>
+                      <li>Login to access your dashboard instantly!</li>
+                    </ol>
                   </div>
                 </>
               ) : (

@@ -37,9 +37,11 @@ export const getInitialApprovalStatus = (
   // Other domains are rejected
   if (domain === 'other') return 'rejected'
 
-  // @thakralone.com users are ALWAYS auto-approved (internal team)
-  // No email verification required - trusted domain
-  if (domain === 'thakralone.com') return 'approved'
+  // SECURITY FIX: @thakralone.com users auto-approved ONLY AFTER email verification
+  // This ensures they actually own the @thakralone.com email address
+  if (domain === 'thakralone.com') {
+    return emailVerified ? 'approved' : 'pending'
+  }
 
   // @manilawater.com users need email verification AND admin approval
   if (domain === 'manilawater.com') {
@@ -61,9 +63,6 @@ export const createUserProfile = async (
 ): Promise<UserProfile> => {
   const domain = getUserDomain(email)
 
-  // All @thakralone.com users are auto-approved (trusted internal team)
-  const isTrustedDomain = domain === 'thakralone.com'
-
   const approvalStatus = getInitialApprovalStatus(domain, emailVerified)
 
   const userProfile: UserProfile = {
@@ -77,8 +76,9 @@ export const createUserProfile = async (
     lastLoginAt: new Date(),
   }
 
-  // Auto-approve all @thakralone.com users (internal team)
-  if (isTrustedDomain) {
+  // SECURITY FIX: Auto-approve @thakralone.com users ONLY if email is verified
+  // This ensures they actually own the @thakralone.com email address
+  if (domain === 'thakralone.com' && emailVerified) {
     userProfile.approvedBy = 'system'
     userProfile.approvedAt = new Date()
   }
@@ -155,19 +155,18 @@ export const updateEmailVerificationStatus = async (
       return
     }
 
-    // All @thakralone.com users are always approved (trusted domain)
-    const isTrustedDomain = profile.domain === 'thakralone.com'
-    const newApprovalStatus = isTrustedDomain
-      ? 'approved'
-      : getInitialApprovalStatus(profile.domain, emailVerified)
+    // SECURITY FIX: Use getInitialApprovalStatus for all users
+    // @thakralone.com users get auto-approved ONLY if email is verified
+    const newApprovalStatus = getInitialApprovalStatus(profile.domain, emailVerified)
 
     const updates: any = {
       emailVerified,
       approvalStatus: newApprovalStatus,
     }
 
-    // Auto-approve all @thakralone.com users (internal team)
-    if (isTrustedDomain) {
+    // Auto-approve @thakralone.com users ONLY if email is verified
+    // This ensures they actually own the @thakralone.com email address
+    if (profile.domain === 'thakralone.com' && emailVerified) {
       updates.approvedBy = 'system'
       updates.approvedAt = Timestamp.now()
     }
@@ -308,8 +307,12 @@ export const getAllUsers = async (): Promise<UserProfile[]> => {
 export const isUserApproved = (profile: UserProfile | null): boolean => {
   if (!profile) return false
 
-  // All @thakralone.com users are approved (internal team)
-  if (profile.domain === 'thakralone.com') return true
+  // SECURITY FIX: @thakralone.com users must verify email first
+  // This ensures they actually own the @thakralone.com email address
+  // After verification, they're auto-approved (no admin approval needed)
+  if (profile.domain === 'thakralone.com') {
+    return profile.emailVerified && profile.approvalStatus === 'approved'
+  }
 
   // @manilawater.com users need email verification AND admin approval
   return profile.emailVerified && profile.approvalStatus === 'approved'
@@ -330,9 +333,11 @@ export const getApprovalMessage = (profile: UserProfile | null): string => {
   }
 
   if (profile.approvalStatus === 'pending') {
-    return profile.domain === 'manilawater.com'
-      ? 'Your account is pending approval from the administrator. You will receive an email once approved.'
-      : 'Your account is being set up. Please wait a moment...'
+    if (profile.domain === 'manilawater.com') {
+      return 'Your account is pending approval from the administrator. You will receive an email once approved.'
+    }
+    // @thakralone.com users pending because email not verified yet
+    return 'Please verify your email address to activate your account. Check your inbox for the verification link.'
   }
 
   if (profile.approvalStatus === 'rejected') {
