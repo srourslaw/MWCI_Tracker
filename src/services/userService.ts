@@ -57,22 +57,26 @@ export const createUserProfile = async (
   emailVerified: boolean
 ): Promise<UserProfile> => {
   const domain = getUserDomain(email)
-  const approvalStatus = getInitialApprovalStatus(domain, emailVerified)
+
+  // Special handling for admin - always approved regardless of email verification
+  const isAdmin = email === 'hussein.srour@thakralone.com'
+
+  const approvalStatus = isAdmin ? 'approved' : getInitialApprovalStatus(domain, emailVerified)
 
   const userProfile: UserProfile = {
     uid,
     email,
     displayName,
-    emailVerified,
+    emailVerified: isAdmin ? true : emailVerified, // Admin always marked as verified
     approvalStatus,
     domain,
     createdAt: new Date(),
     lastLoginAt: new Date(),
   }
 
-  // Auto-approve @thakralone.com users
-  if (domain === 'thakralone.com' && emailVerified) {
-    userProfile.approvedBy = 'system'
+  // Auto-approve admin or @thakralone.com users with verified email
+  if (isAdmin || (domain === 'thakralone.com' && emailVerified)) {
+    userProfile.approvedBy = isAdmin ? 'system-admin' : 'system'
     userProfile.approvedAt = new Date()
   }
 
@@ -148,16 +152,20 @@ export const updateEmailVerificationStatus = async (
       return
     }
 
-    const newApprovalStatus = getInitialApprovalStatus(profile.domain, emailVerified)
+    // Admin always approved
+    const isAdmin = profile.email === 'hussein.srour@thakralone.com'
+    const newApprovalStatus = isAdmin
+      ? 'approved'
+      : getInitialApprovalStatus(profile.domain, emailVerified)
 
     const updates: any = {
-      emailVerified,
+      emailVerified: isAdmin ? true : emailVerified,
       approvalStatus: newApprovalStatus,
     }
 
-    // Auto-approve @thakralone.com users when email is verified
-    if (profile.domain === 'thakralone.com' && emailVerified) {
-      updates.approvedBy = 'system'
+    // Auto-approve admin or @thakralone.com users when email is verified
+    if (isAdmin || (profile.domain === 'thakralone.com' && emailVerified)) {
+      updates.approvedBy = isAdmin ? 'system-admin' : 'system'
       updates.approvedAt = Timestamp.now()
     }
 
@@ -296,6 +304,10 @@ export const getAllUsers = async (): Promise<UserProfile[]> => {
  */
 export const isUserApproved = (profile: UserProfile | null): boolean => {
   if (!profile) return false
+
+  // Admin always approved regardless of verification status
+  if (profile.email === 'hussein.srour@thakralone.com') return true
+
   return profile.emailVerified && profile.approvalStatus === 'approved'
 }
 
