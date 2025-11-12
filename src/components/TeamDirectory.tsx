@@ -63,51 +63,51 @@ export default function TeamDirectory() {
         </div>
       </div>
 
-      {/* Team Members Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* Team Members Grid - Compact 3-column layout */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
         {filteredMembers.map((member, index) => (
           <motion.div
             key={member.id}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.05 }}
-            className="bg-white border border-slate-200 rounded-xl p-4 hover:shadow-md transition"
+            transition={{ delay: index * 0.03 }}
+            className="bg-white border border-slate-200 rounded-lg p-3 hover:shadow-md transition"
           >
-            <div className="flex items-start gap-3">
-              {/* Avatar */}
-              <div className={`flex-shrink-0 w-12 h-12 rounded-full ${
+            <div className="flex items-start gap-2">
+              {/* Avatar - Smaller */}
+              <div className={`flex-shrink-0 w-10 h-10 rounded-full ${
                 member.isAdmin
                   ? 'bg-gradient-to-br from-orange-500 to-red-500'
                   : 'bg-gradient-to-br from-sky-500 to-blue-600'
-              } flex items-center justify-center text-white font-bold text-lg shadow-md`}>
+              } flex items-center justify-center text-white font-bold text-sm shadow-md`}>
                 {member.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
               </div>
 
-              {/* Info */}
+              {/* Info - Compact */}
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <h4 className="text-slate-800 font-semibold truncate">
+                <div className="flex items-center gap-1.5">
+                  <h4 className="text-slate-800 font-semibold text-sm truncate">
                     {member.name}
                   </h4>
                   {member.isAdmin && (
-                    <span className="px-2 py-0.5 bg-orange-100 text-orange-700 text-xs font-semibold rounded">
+                    <span className="px-1.5 py-0.5 bg-orange-100 text-orange-700 text-xs font-semibold rounded">
                       Admin
                     </span>
                   )}
                 </div>
 
-                <div className="flex items-center gap-1 text-sky-600 text-sm mt-1">
-                  <Briefcase className="w-3 h-3" />
+                <div className="flex items-center gap-1 text-sky-600 text-xs mt-0.5">
+                  <Briefcase className="w-3 h-3 flex-shrink-0" />
                   <span className="truncate">{member.role}</span>
                 </div>
 
-                <div className="flex items-center gap-1 text-slate-500 text-sm mt-1">
-                  <Building2 className="w-3 h-3" />
-                  <span>{member.department}</span>
+                <div className="flex items-center gap-1 text-slate-500 text-xs mt-0.5">
+                  <Building2 className="w-3 h-3 flex-shrink-0" />
+                  <span className="truncate">{member.department}</span>
                 </div>
 
-                <div className="flex items-center gap-1 text-slate-400 text-xs mt-2">
-                  <Mail className="w-3 h-3" />
+                <div className="flex items-center gap-1 text-slate-400 text-xs mt-1">
+                  <Mail className="w-3 h-3 flex-shrink-0" />
                   <span className="truncate">{member.email}</span>
                 </div>
               </div>

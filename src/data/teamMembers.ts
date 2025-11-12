@@ -152,6 +152,14 @@ export const TEAM_MEMBERS: TeamMember[] = [
     department: 'Executive',
     isAdmin: false,
   },
+  {
+    id: 19,
+    name: 'Hussein Srour',
+    email: 'hussein.srour@thakralone.com',
+    role: 'Executive Leadership',
+    department: 'Executive',
+    isAdmin: true,
+  },
 ]
 
 // Helper function to get team member by email
