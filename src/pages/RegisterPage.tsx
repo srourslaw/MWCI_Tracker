@@ -9,6 +9,7 @@ export default function RegisterPage() {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState(false)
   const [loading, setLoading] = useState(false)
   const { signup } = useAuth()
   const navigate = useNavigate()
@@ -16,10 +17,12 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
+    setSuccess(false)
 
     // Validation
-    if (!email.endsWith('@thakralone.com')) {
-      setError('Please use your company email (@thakralone.com)')
+    const domain = email.split('@')[1]?.toLowerCase()
+    if (domain !== 'thakralone.com' && domain !== 'manilawater.com') {
+      setError('Only @thakralone.com and @manilawater.com email addresses are allowed')
       return
     }
 
@@ -37,7 +40,8 @@ export default function RegisterPage() {
 
     try {
       await signup(email, password)
-      navigate('/dashboard')
+      setSuccess(true)
+      // Don't navigate - show success message and let user click "Go to Login"
     } catch (err: any) {
       setError(err.message || 'Failed to create account')
     } finally {
@@ -115,17 +119,18 @@ export default function RegisterPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition"
-                  placeholder="you@thakralone.com"
+                  placeholder="you@thakralone.com or @manilawater.com"
                   required
+                  disabled={success}
                 />
               </div>
-              {email && !email.endsWith('@thakralone.com') && (
+              {email && !email.endsWith('@thakralone.com') && !email.endsWith('@manilawater.com') && (
                 <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
                   <AlertCircle className="w-4 h-4" />
-                  Must use @thakralone.com email
+                  Must use @thakralone.com or @manilawater.com email
                 </p>
               )}
-              {email && email.endsWith('@thakralone.com') && (
+              {email && (email.endsWith('@thakralone.com') || email.endsWith('@manilawater.com')) && (
                 <p className="mt-2 text-sm text-green-600 flex items-center gap-1">
                   <CheckCircle className="w-4 h-4" />
                   Valid company email
@@ -146,6 +151,7 @@ export default function RegisterPage() {
                   className="w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition"
                   placeholder="At least 6 characters"
                   required
+                  disabled={success}
                 />
               </div>
               {password && (
@@ -180,6 +186,7 @@ export default function RegisterPage() {
                   className="w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition"
                   placeholder="Confirm your password"
                   required
+                  disabled={success}
                 />
               </div>
               {confirmPassword && password !== confirmPassword && (
@@ -196,28 +203,88 @@ export default function RegisterPage() {
               )}
             </div>
 
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              type="submit"
-              disabled={loading}
-              className="w-full py-3 px-4 bg-gradient-to-r from-sky-500 to-blue-600 text-white font-semibold rounded-lg hover:from-sky-600 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition shadow-lg"
-            >
-              {loading ? 'Creating account...' : 'Create Account'}
-            </motion.button>
+            {!success && (
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                type="submit"
+                disabled={loading}
+                className="w-full py-3 px-4 bg-gradient-to-r from-sky-500 to-blue-600 text-white font-semibold rounded-lg hover:from-sky-600 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition shadow-lg"
+              >
+                {loading ? 'Creating account...' : 'Create Account'}
+              </motion.button>
+            )}
           </form>
 
-          <div className="mt-6 text-center">
-            <p className="text-slate-600">
-              Already have an account?{' '}
-              <Link
-                to="/login"
-                className="text-sky-600 hover:text-sky-700 font-semibold transition"
+          {/* Success Message */}
+          {success && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-6 p-6 bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 rounded-xl"
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 bg-green-500 rounded-full">
+                  <CheckCircle className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-green-900 text-lg">Account Created Successfully!</h3>
+                  <p className="text-green-700 text-sm">Check your email to verify your account</p>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg p-4 mb-4">
+                <p className="text-slate-700 text-sm leading-relaxed">
+                  We've sent a verification email to <strong>{email}</strong>.
+                  Please click the verification link in your email to activate your account.
+                </p>
+              </div>
+
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                <p className="text-blue-800 text-sm font-semibold mb-2">Next Steps:</p>
+                <ol className="text-blue-700 text-sm space-y-1 list-decimal list-inside">
+                  <li>Check your inbox (and spam folder) for the verification email</li>
+                  <li>Click the verification link in the email</li>
+                  {email.endsWith('@manilawater.com') && (
+                    <li className="font-semibold">Wait for administrator approval (you'll receive an email notification)</li>
+                  )}
+                  <li>Login to access your dashboard</li>
+                </ol>
+              </div>
+
+              {email.endsWith('@manilawater.com') && (
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
+                  <p className="text-amber-800 text-xs">
+                    <strong>Note:</strong> Since you registered with an @manilawater.com email,
+                    your account requires administrator approval before you can access the system.
+                  </p>
+                </div>
+              )}
+
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => navigate('/login')}
+                className="w-full py-3 px-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold rounded-lg hover:from-green-600 hover:to-emerald-700 transition shadow-md"
               >
-                Sign in here
-              </Link>
-            </p>
-          </div>
+                Go to Login
+              </motion.button>
+            </motion.div>
+          )}
+
+          {!success && (
+            <div className="mt-6 text-center">
+              <p className="text-slate-600">
+                Already have an account?{' '}
+                <Link
+                  to="/login"
+                  className="text-sky-600 hover:text-sky-700 font-semibold transition"
+                >
+                  Sign in here
+                </Link>
+              </p>
+            </div>
+          )}
         </motion.div>
       </motion.div>
 

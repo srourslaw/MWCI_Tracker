@@ -19,6 +19,7 @@ import { Task } from '../types/task'
 import { getTeamMemberName, TEAM_MEMBERS } from '../data/teamMembers'
 import TeamDirectory from '../components/TeamDirectory'
 import ColumnPermissionsManager from '../components/ColumnPermissionsManager'
+import UserApprovalDashboard from '../components/UserApprovalDashboard'
 import { logger } from '../utils/logger'
 
 interface TeamMember {
@@ -300,11 +301,21 @@ export default function AdminDashboard() {
           </motion.div>
         </div>
 
-        {/* Team Directory Section */}
+        {/* User Approvals Section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6 }}
+          className="mt-8"
+        >
+          <UserApprovalDashboard adminEmail={user?.email || ''} />
+        </motion.div>
+
+        {/* Team Directory Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.7 }}
           className="mt-8"
         >
           <TeamDirectory />
@@ -314,8 +325,8 @@ export default function AdminDashboard() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.0 }}
-          className="glass-morphism rounded-2xl p-6"
+          transition={{ delay: 0.8 }}
+          className="mt-8 glass-morphism rounded-2xl p-6"
         >
           <ColumnPermissionsManager userId={user?.uid || ''} />
         </motion.div>
