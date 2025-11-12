@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Clock, Mail, Shield, CheckCircle, AlertCircle, LogOut, RefreshCw } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
@@ -13,11 +13,39 @@ interface Props {
 }
 
 export default function PendingApprovalPage({ userProfile }: Props) {
-  const { logout } = useAuth()
+  const { logout, refreshUserProfile } = useAuth()
   const navigate = useNavigate()
   const [resendingEmail, setResendingEmail] = useState(false)
   const [resendSuccess, setResendSuccess] = useState(false)
   const [resendError, setResendError] = useState('')
+  const [checkingVerification, setCheckingVerification] = useState(false)
+
+  // Auto-check for email verification every 3 seconds
+  useEffect(() => {
+    if (userProfile.emailVerified) return // Already verified
+
+    const interval = setInterval(async () => {
+      try {
+        setCheckingVerification(true)
+        // Reload Firebase auth state to get latest emailVerified status
+        await auth.currentUser?.reload()
+
+        // Check if email is now verified
+        if (auth.currentUser?.emailVerified) {
+          logger.log('Email verified! Refreshing user profile...')
+          // Refresh user profile to update approval status
+          await refreshUserProfile()
+          // The user will be automatically redirected by the auth system
+        }
+      } catch (error) {
+        logger.error('Error checking verification status:', error)
+      } finally {
+        setCheckingVerification(false)
+      }
+    }, 3000) // Check every 3 seconds
+
+    return () => clearInterval(interval)
+  }, [userProfile.emailVerified, refreshUserProfile])
 
   const handleLogout = async () => {
     try {
@@ -201,10 +229,22 @@ export default function PendingApprovalPage({ userProfile }: Props) {
             </div>
 
             {/* Action Badge */}
-            <div className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-sky-500 to-blue-600 text-white rounded-full font-semibold shadow-lg mb-8">
+            <div className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-sky-500 to-blue-600 text-white rounded-full font-semibold shadow-lg mb-4">
               <Clock className="w-5 h-5" />
               {statusInfo.action}
             </div>
+
+            {/* Auto-checking indicator */}
+            {!userProfile.emailVerified && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="flex items-center justify-center gap-2 text-sm text-slate-600 mb-8"
+              >
+                <RefreshCw className={`w-4 h-4 ${checkingVerification ? 'animate-spin text-blue-500' : 'text-slate-400'}`} />
+                <span>Auto-checking verification status...</span>
+              </motion.div>
+            )}
 
             {/* Help Text & Resend Button */}
             {!userProfile.emailVerified && (
