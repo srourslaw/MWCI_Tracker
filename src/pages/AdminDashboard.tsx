@@ -16,7 +16,8 @@ import {
   CheckCircle,
   Clock,
   XCircle,
-  Mail
+  Mail,
+  Send
 } from 'lucide-react'
 import { taskService } from '../services/taskService'
 import { Task } from '../types/task'
@@ -26,6 +27,8 @@ import ColumnPermissionsManager from '../components/ColumnPermissionsManager'
 import UserApprovalDashboard from '../components/UserApprovalDashboard'
 import { subscribeToAllUsers } from '../services/userService'
 import { UserProfile } from '../types/user'
+import { sendEmailVerification } from 'firebase/auth'
+import { auth } from '../firebase'
 import { logger } from '../utils/logger'
 
 interface TeamMember {
@@ -48,6 +51,8 @@ export default function AdminDashboard() {
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([])
   const [allUsers, setAllUsers] = useState<UserProfile[]>([])
   const [loadingUsers, setLoadingUsers] = useState(true)
+  const [sendingTestEmail, setSendingTestEmail] = useState(false)
+  const [testEmailSent, setTestEmailSent] = useState(false)
 
   useEffect(() => {
     // Subscribe to all tasks
@@ -119,6 +124,36 @@ export default function AdminDashboard() {
       navigate('/login')
     } catch (error) {
       logger.error('Failed to log out:', error)
+    }
+  }
+
+  // Test helper function to send verification email to currently logged in user
+  const handleSendTestVerificationEmail = async () => {
+    if (!auth.currentUser) {
+      alert('No user logged in')
+      return
+    }
+
+    setSendingTestEmail(true)
+    setTestEmailSent(false)
+
+    try {
+      const actionCodeSettings = {
+        url: window.location.origin + '/login?verified=true',
+        handleCodeInApp: false,
+      }
+      await sendEmailVerification(auth.currentUser, actionCodeSettings)
+      setTestEmailSent(true)
+      logger.log('📧 Test verification email sent to:', auth.currentUser.email)
+
+      setTimeout(() => {
+        setTestEmailSent(false)
+      }, 5000)
+    } catch (error: any) {
+      logger.error('Failed to send test email:', error)
+      alert('Failed to send test email: ' + error.message)
+    } finally {
+      setSendingTestEmail(false)
     }
   }
 
@@ -562,6 +597,68 @@ export default function AdminDashboard() {
           className="mt-8 glass-morphism rounded-2xl p-6"
         >
           <ColumnPermissionsManager userId={user?.uid || ''} />
+        </motion.div>
+
+        {/* Test Helper Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.9 }}
+          className="mt-8 glass-morphism rounded-2xl p-6"
+        >
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-lg">
+              <Send className="w-6 h-6 text-white" />
+            </div>
+            <div className="flex-1">
+              <h2 className="text-xl font-bold text-slate-800">Email Verification Test Helper</h2>
+              <p className="text-sm text-slate-600">
+                Test the automatic email verification redirect
+              </p>
+            </div>
+          </div>
+
+          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg mb-4">
+            <p className="text-blue-900 text-sm mb-2">
+              <strong>How to test:</strong>
+            </p>
+            <ol className="text-blue-700 text-sm space-y-1 list-decimal list-inside">
+              <li>Click "Send Test Verification Email" below</li>
+              <li>Check your inbox for the verification email</li>
+              <li>Click the verification link in the email</li>
+              <li>You should automatically return to the login page</li>
+              <li>The page will show a green success banner</li>
+              <li>After 2 seconds, you'll be auto-redirected back here</li>
+              <li><strong>No manual refresh needed!</strong></li>
+            </ol>
+          </div>
+
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={handleSendTestVerificationEmail}
+            disabled={sendingTestEmail}
+            className="w-full py-3 px-4 bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-semibold rounded-lg hover:from-purple-600 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition shadow-md flex items-center justify-center gap-2"
+          >
+            <Send className="w-5 h-5" />
+            {sendingTestEmail ? 'Sending Email...' : 'Send Test Verification Email'}
+          </motion.button>
+
+          {testEmailSent && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg text-green-700"
+            >
+              <p className="font-semibold">✅ Test email sent successfully!</p>
+              <p className="text-sm mt-1">Check your inbox at: <strong>{user?.email}</strong></p>
+              <p className="text-sm mt-1">Click the verification link to test the auto-redirect.</p>
+            </motion.div>
+          )}
+
+          <p className="text-xs text-slate-400 text-center mt-4">
+            🧪 This sends a verification email with the automatic redirect configured. The redirect should work without any manual refresh!
+          </p>
         </motion.div>
       </main>
     </div>
