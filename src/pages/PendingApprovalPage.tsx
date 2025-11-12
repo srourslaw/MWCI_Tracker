@@ -1,8 +1,12 @@
+import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Clock, Mail, Shield, CheckCircle, AlertCircle, LogOut } from 'lucide-react'
+import { Clock, Mail, Shield, CheckCircle, AlertCircle, LogOut, RefreshCw } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { useNavigate } from 'react-router-dom'
 import { UserProfile } from '../types/user'
+import { sendEmailVerification } from 'firebase/auth'
+import { auth } from '../firebase'
+import { logger } from '../utils/logger'
 
 interface Props {
   userProfile: UserProfile
@@ -11,6 +15,9 @@ interface Props {
 export default function PendingApprovalPage({ userProfile }: Props) {
   const { logout } = useAuth()
   const navigate = useNavigate()
+  const [resendingEmail, setResendingEmail] = useState(false)
+  const [resendSuccess, setResendSuccess] = useState(false)
+  const [resendError, setResendError] = useState('')
 
   const handleLogout = async () => {
     try {
@@ -18,6 +25,33 @@ export default function PendingApprovalPage({ userProfile }: Props) {
       navigate('/login')
     } catch (error) {
       console.error('Logout failed:', error)
+    }
+  }
+
+  const handleResendEmail = async () => {
+    if (!auth.currentUser) {
+      setResendError('No user logged in')
+      return
+    }
+
+    setResendingEmail(true)
+    setResendError('')
+    setResendSuccess(false)
+
+    try {
+      await sendEmailVerification(auth.currentUser)
+      setResendSuccess(true)
+      logger.log('Verification email resent to:', auth.currentUser.email)
+
+      // Hide success message after 5 seconds
+      setTimeout(() => {
+        setResendSuccess(false)
+      }, 5000)
+    } catch (error: any) {
+      logger.error('Failed to resend verification email:', error)
+      setResendError(error.message || 'Failed to resend email. Please try again later.')
+    } finally {
+      setResendingEmail(false)
     }
   }
 
@@ -172,14 +206,70 @@ export default function PendingApprovalPage({ userProfile }: Props) {
               {statusInfo.action}
             </div>
 
-            {/* Help Text */}
+            {/* Help Text & Resend Button */}
             {!userProfile.emailVerified && (
-              <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg mb-6">
-                <p className="text-amber-800 text-sm">
-                  <strong>Didn't receive the email?</strong> Check your spam folder or
-                  contact support for assistance.
-                </p>
-              </div>
+              <>
+                <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg mb-4">
+                  <p className="text-amber-800 text-sm">
+                    <strong>Didn't receive the email?</strong> Check your spam folder or try
+                    resending the verification email.
+                  </p>
+                </div>
+
+                {/* Resend Email Button */}
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleResendEmail}
+                  disabled={resendingEmail}
+                  className="flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-cyan-600 text-white rounded-lg hover:from-blue-600 hover:to-cyan-700 transition font-medium mx-auto mb-4 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <RefreshCw className={`w-4 h-4 ${resendingEmail ? 'animate-spin' : ''}`} />
+                  {resendingEmail ? 'Sending...' : 'Resend Verification Email'}
+                </motion.button>
+
+                {/* Success Message */}
+                {resendSuccess && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="p-3 bg-green-50 border border-green-200 rounded-lg mb-4"
+                  >
+                    <p className="text-green-700 text-sm flex items-center justify-center gap-2">
+                      <CheckCircle className="w-4 h-4" />
+                      <strong>Email sent!</strong> Check your inbox (and spam folder).
+                    </p>
+                  </motion.div>
+                )}
+
+                {/* Error Message */}
+                {resendError && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="p-3 bg-red-50 border border-red-200 rounded-lg mb-4"
+                  >
+                    <p className="text-red-700 text-sm flex items-center justify-center gap-2">
+                      <AlertCircle className="w-4 h-4" />
+                      {resendError}
+                    </p>
+                  </motion.div>
+                )}
+
+                {/* Troubleshooting Box */}
+                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg mb-6">
+                  <p className="text-blue-800 text-sm font-semibold mb-2">
+                    📧 Email Not Arriving? Try This:
+                  </p>
+                  <ul className="text-blue-700 text-xs space-y-1 text-left list-disc list-inside">
+                    <li>Check your <strong>spam/junk</strong> folder</li>
+                    <li>Wait a few minutes - it can take up to 5 minutes</li>
+                    <li>Make sure <strong>{userProfile.email}</strong> is correct</li>
+                    <li>Add <strong>noreply@mwci-tracker.firebaseapp.com</strong> to your contacts</li>
+                    <li>Contact: hussein.srour@thakralone.com for help</li>
+                  </ul>
+                </div>
+              </>
             )}
 
             {/* Logout Button */}
