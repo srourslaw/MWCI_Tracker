@@ -18,6 +18,8 @@ import { taskService } from '../services/taskService'
 import { Task } from '../types/task'
 import { getTeamMemberName, TEAM_MEMBERS } from '../data/teamMembers'
 import TeamDirectory from '../components/TeamDirectory'
+import ColumnPermissionsManager from '../components/ColumnPermissionsManager'
+import { logger } from '../utils/logger'
 
 interface TeamMember {
   email: string
@@ -78,7 +80,7 @@ export default function AdminDashboard() {
         setTeamMembers(members)
       },
       (error) => {
-        console.error('Error loading all tasks:', error)
+        logger.error('Error loading all tasks:', error)
         setLoading(false)
       }
     )
@@ -91,7 +93,7 @@ export default function AdminDashboard() {
       await logout()
       navigate('/login')
     } catch (error) {
-      console.error('Failed to log out:', error)
+      logger.error('Failed to log out:', error)
     }
   }
 
@@ -306,6 +308,16 @@ export default function AdminDashboard() {
           className="mt-8"
         >
           <TeamDirectory />
+        </motion.div>
+
+        {/* Column Permissions Manager */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.0 }}
+          className="glass-morphism rounded-2xl p-6"
+        >
+          <ColumnPermissionsManager userId={user?.uid || ''} />
         </motion.div>
       </main>
     </div>

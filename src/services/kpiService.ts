@@ -5,13 +5,13 @@ import {
   deleteDoc,
   doc,
   query,
-  orderBy,
   onSnapshot,
   getDocs,
   Timestamp,
 } from 'firebase/firestore'
 import { db } from '../firebase'
 import { KPI, KPIInput } from '../types/kpi'
+import { logger } from '../utils/logger'
 
 const KPI_COLLECTION = 'kpis'
 
@@ -50,11 +50,9 @@ export const kpiService = {
     callback: (kpis: KPI[]) => void,
     onError?: (error: Error) => void
   ): () => void {
-    const q = query(
-      collection(db, KPI_COLLECTION),
-      orderBy('category'),
-      orderBy('name')
-    )
+    // Query without orderBy to avoid needing composite index
+    // Sorting is done on the client side in KPITracker component
+    const q = query(collection(db, KPI_COLLECTION))
 
     return onSnapshot(
       q,
@@ -93,7 +91,7 @@ export const kpiService = {
         callback(kpis)
       },
       (error) => {
-        console.error('Error fetching KPIs:', error)
+        logger.error('Error fetching KPIs:', error)
         if (onError) onError(error as Error)
       }
     )

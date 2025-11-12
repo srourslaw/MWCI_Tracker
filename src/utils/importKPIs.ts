@@ -2,6 +2,7 @@ import { kpiService } from '../services/kpiService'
 import { initialKPIs } from '../data/initialKPIs'
 import { collection, getDocs } from 'firebase/firestore'
 import { db } from '../firebase'
+import { logger } from './logger'
 
 export async function importInitialKPIs(userId: string): Promise<{ success: number; failed: number; errors: string[]; skipped: number }> {
   let success = 0
@@ -9,7 +10,7 @@ export async function importInitialKPIs(userId: string): Promise<{ success: numb
   let skipped = 0
   const errors: string[] = []
 
-  console.log(`Starting import of ${initialKPIs.length} KPIs...`)
+  logger.log(`Starting import of ${initialKPIs.length} KPIs...`)
 
   // First, get all existing KPIs to check for duplicates
   const existingKPIsSnapshot = await getDocs(collection(db, 'kpis'))
@@ -27,22 +28,22 @@ export async function importInitialKPIs(userId: string): Promise<{ success: numb
 
       if (exists) {
         skipped++
-        console.log(`⊘ Skipped (already exists): ${kpi.name}`)
+        logger.log(`⊘ Skipped (already exists): ${kpi.name}`)
         continue
       }
 
       await kpiService.createKPI(userId, kpi)
       success++
-      console.log(`✓ Imported: ${kpi.name}`)
+      logger.log(`✓ Imported: ${kpi.name}`)
     } catch (error) {
       failed++
       const errorMessage = `Failed to import ${kpi.name}: ${error}`
       errors.push(errorMessage)
-      console.error(`✗ ${errorMessage}`)
+      logger.error(`✗ ${errorMessage}`)
     }
   }
 
-  console.log(`\nImport complete: ${success} successful, ${skipped} skipped, ${failed} failed`)
+  logger.log(`\nImport complete: ${success} successful, ${skipped} skipped, ${failed} failed`)
 
   return { success, failed, errors, skipped }
 }

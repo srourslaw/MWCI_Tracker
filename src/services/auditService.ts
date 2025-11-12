@@ -11,6 +11,7 @@ import {
 } from 'firebase/firestore'
 import { db } from '../firebase'
 import { AuditLog, AuditLogInput, AuditFilters } from '../types/audit'
+import { logger } from '../utils/logger'
 
 const AUDIT_COLLECTION = 'auditLogs'
 
@@ -23,7 +24,7 @@ export const auditService = {
     }
 
     const docRef = await addDoc(collection(db, AUDIT_COLLECTION), auditData)
-    console.log('📝 Audit log created:', {
+    logger.log('📝 Audit log created:', {
       field: auditInput.field,
       user: auditInput.changedByName,
       kpi: auditInput.kpiName,
@@ -92,7 +93,7 @@ export const auditService = {
         callback(filteredLogs)
       },
       (error) => {
-        console.error('Error fetching audit logs:', error)
+        logger.error('Error fetching audit logs:', error)
         if (onError) onError(error as Error)
       }
     )

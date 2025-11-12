@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X } from 'lucide-react'
 import { KPI, KPIInput, KPICategory, SignoffStatus, DevStatus, TestingStatus } from '../types/kpi'
+import { logger } from '../utils/logger'
 
 interface KPIModalProps {
   isOpen: boolean
@@ -100,7 +101,7 @@ export default function KPIModal({ isOpen, onClose, onSubmit, kpi, mode }: KPIMo
       await onSubmit(formData)
       onClose()
     } catch (error) {
-      console.error('Error submitting KPI:', error)
+      logger.error('Error submitting KPI:', error)
     } finally {
       setSubmitting(false)
     }

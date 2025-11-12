@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import { Lock } from 'lucide-react'
 
 interface EditableCellProps {
   value: string | number
@@ -8,6 +9,7 @@ interface EditableCellProps {
   bgColor?: string
   textColor?: string
   editable?: boolean
+  showLockIcon?: boolean
 }
 
 export default function EditableCell({
@@ -18,20 +20,24 @@ export default function EditableCell({
   bgColor = 'bg-white',
   textColor = 'text-slate-800',
   editable = true,
+  showLockIcon = false,
 }: EditableCellProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [editValue, setEditValue] = useState(value)
+  const isSaving = useRef(false)
 
   useEffect(() => {
-    // Only update editValue if we're not currently editing
-    if (!isEditing) {
+    // Only update if we're not currently editing or saving
+    if (!isEditing && !isSaving.current) {
       setEditValue(value)
     }
   }, [value, isEditing])
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (editValue !== value) {
-      onSave(editValue)
+      isSaving.current = true
+      await onSave(editValue)
+      isSaving.current = false
     }
     setIsEditing(false)
   }
@@ -47,8 +53,9 @@ export default function EditableCell({
 
   if (!editable) {
     return (
-      <div className={`px-2 py-1 ${bgColor} ${textColor} text-sm`}>
+      <div className={`px-2 py-1 ${bgColor} ${textColor} text-sm flex items-center gap-2`}>
         {value || '-'}
+        {showLockIcon && <Lock className="w-3 h-3 text-slate-400" />}
       </div>
     )
   }
@@ -58,22 +65,22 @@ export default function EditableCell({
       return (
         <select
           value={editValue.toString()}
-          onChange={(e) => {
+          onChange={async (e) => {
             const newValue = e.target.value
             setEditValue(newValue)
-            // Save immediately on change for dropdowns
             if (newValue !== value) {
-              onSave(newValue)
-            }
-            // Small delay to ensure save completes before closing
-            setTimeout(() => {
+              isSaving.current = true
               setIsEditing(false)
-            }, 100)
+              await onSave(newValue)
+              isSaving.current = false
+            } else {
+              setIsEditing(false)
+            }
           }}
           onBlur={() => {
-            setTimeout(() => {
+            if (!isSaving.current) {
               setIsEditing(false)
-            }, 100)
+            }
           }}
           onKeyDown={handleKeyDown}
           autoFocus

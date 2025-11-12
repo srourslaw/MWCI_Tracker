@@ -15,6 +15,7 @@ import {
 import { auditService } from '../services/auditService'
 import { AuditLog as AuditLogType, AuditFilters } from '../types/audit'
 import { getTeamMemberName } from '../data/teamMembers'
+import { logger } from '../utils/logger'
 
 export default function AuditLog() {
   const { user, logout } = useAuth()
@@ -41,7 +42,7 @@ export default function AuditLog() {
         setLoading(false)
       },
       (error) => {
-        console.error('Error loading audit logs:', error)
+        logger.error('Error loading audit logs:', error)
         setLoading(false)
       },
       500 // Load last 500 changes
@@ -58,7 +59,7 @@ export default function AuditLog() {
       await logout()
       navigate('/')
     } catch (error) {
-      console.error('Logout error:', error)
+      logger.error('Logout error:', error)
     }
   }
 

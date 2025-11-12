@@ -19,6 +19,7 @@ import { taskService } from '../services/taskService'
 import { Task, TaskInput } from '../types/task'
 import TaskModal from '../components/TaskModal'
 import { getTeamMemberName } from '../data/teamMembers'
+import { logger } from '../utils/logger'
 
 export default function Dashboard() {
   const { user, logout } = useAuth()
@@ -52,7 +53,7 @@ export default function Dashboard() {
         })
       },
       (error) => {
-        console.error('Error loading tasks:', error)
+        logger.error('Error loading tasks:', error)
         setLoading(false)
       }
     )
@@ -65,7 +66,7 @@ export default function Dashboard() {
       await logout()
       navigate('/login')
     } catch (error) {
-      console.error('Failed to log out:', error)
+      logger.error('Failed to log out:', error)
     }
   }
 

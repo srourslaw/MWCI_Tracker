@@ -7,6 +7,7 @@ import Dashboard from './pages/Dashboard'
 import AdminDashboard from './pages/AdminDashboard'
 import KPITracker from './pages/KPITracker'
 import AuditLog from './pages/AuditLog'
+import ErrorBoundary from './components/ErrorBoundary'
 
 function PrivateRoute({ children, adminOnly = false }: { children: React.ReactNode, adminOnly?: boolean }) {
   const { user, loading } = useAuth()
@@ -32,47 +33,54 @@ function PrivateRoute({ children, adminOnly = false }: { children: React.ReactNo
 
 function App() {
   return (
-    <Router>
-      <AuthProvider>
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route
-            path="/dashboard"
-            element={
-              <PrivateRoute>
-                <Dashboard />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/admin"
-            element={
-              <PrivateRoute adminOnly={true}>
-                <AdminDashboard />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/kpi-tracker"
-            element={
-              <PrivateRoute>
-                <KPITracker />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/audit-log"
-            element={
-              <PrivateRoute adminOnly={true}>
-                <AuditLog />
-              </PrivateRoute>
-            }
-          />
-          <Route path="/" element={<Navigate to="/login" />} />
-        </Routes>
-      </AuthProvider>
-    </Router>
+    <ErrorBoundary>
+      <Router
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true,
+        }}
+      >
+        <AuthProvider>
+          <Routes>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route
+              path="/dashboard"
+              element={
+                <PrivateRoute>
+                  <Dashboard />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/admin"
+              element={
+                <PrivateRoute adminOnly={true}>
+                  <AdminDashboard />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/kpi-tracker"
+              element={
+                <PrivateRoute>
+                  <KPITracker />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/audit-log"
+              element={
+                <PrivateRoute adminOnly={true}>
+                  <AuditLog />
+                </PrivateRoute>
+              }
+            />
+            <Route path="/" element={<Navigate to="/login" />} />
+          </Routes>
+        </AuthProvider>
+      </Router>
+    </ErrorBoundary>
   )
 }
 

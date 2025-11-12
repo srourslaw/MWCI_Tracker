@@ -13,6 +13,7 @@ import {
 } from 'firebase/firestore'
 import { db } from '../firebase'
 import { Task, TaskInput } from '../types/task'
+import { logger } from '../utils/logger'
 
 const TASKS_COLLECTION = 'tasks'
 
@@ -79,7 +80,7 @@ export const taskService = {
         callback(tasks)
       },
       (error) => {
-        console.error('Error fetching tasks:', error)
+        logger.error('Error fetching tasks:', error)
         if (onError) onError(error as Error)
       }
     )
@@ -115,7 +116,7 @@ export const taskService = {
         callback(tasks)
       },
       (error) => {
-        console.error('Error fetching all tasks:', error)
+        logger.error('Error fetching all tasks:', error)
         if (onError) onError(error as Error)
       }
     )

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useAuth } from '../hooks/useAuth'
 import { useNavigate, Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
@@ -23,13 +23,16 @@ import {
 } from 'lucide-react'
 import { kpiService } from '../services/kpiService'
 import { auditService } from '../services/auditService'
+import { permissionsService } from '../services/permissionsService'
 import { KPI, KPIInput } from '../types/kpi'
+import { ColumnName } from '../types/permissions'
 import { getTeamMemberName } from '../data/teamMembers'
 import KPIModal from '../components/KPIModal'
 import EditableCell from '../components/EditableCell'
 import { importInitialKPIs } from '../utils/importKPIs'
 import { initialKPIs } from '../data/initialKPIs'
 import KPIAnalytics from '../components/KPIAnalytics'
+import { logger } from '../utils/logger'
 
 export default function KPITracker() {
   const { user, logout } = useAuth()
@@ -53,7 +56,20 @@ export default function KPITracker() {
     customerDependency: '',
   })
 
+  // Permissions state
+  const [editableColumns, setEditableColumns] = useState<ColumnName[]>([])
+
   const isAdmin = user?.email === 'hussein.srour@thakralone.com'
+
+  // Load user's editable columns
+  useEffect(() => {
+    if (!user) return
+
+    permissionsService
+      .getUserEditableColumns(user.email || '', isAdmin)
+      .then(setEditableColumns)
+      .catch((error) => logger.error('Error loading permissions:', error))
+  }, [user, isAdmin])
 
   useEffect(() => {
     const unsubscribe = kpiService.subscribeToKPIs(
@@ -62,7 +78,7 @@ export default function KPITracker() {
         setLoading(false)
       },
       (error) => {
-        console.error('Error loading KPIs:', error)
+        logger.error('Error loading KPIs:', error)
         setLoading(false)
       }
     )
@@ -76,14 +92,14 @@ export default function KPITracker() {
       if (kpis.length === 0 && !loading && user && !importing) {
         const hasImported = localStorage.getItem('kpisImported')
         if (!hasImported) {
-          console.log('Auto-importing initial KPI data...')
+          logger.log('Auto-importing initial KPI data...')
           setImporting(true)
           try {
             const result = await importInitialKPIs(user.uid)
-            console.log(`Auto-import complete: ${result.success} successful, ${result.failed} failed`)
+            logger.log(`Auto-import complete: ${result.success} successful, ${result.failed} failed`)
             localStorage.setItem('kpisImported', 'true')
           } catch (error) {
-            console.error('Auto-import failed:', error)
+            logger.error('Auto-import failed:', error)
           } finally {
             setImporting(false)
           }
@@ -94,12 +110,67 @@ export default function KPITracker() {
     autoImport()
   }, [kpis.length, loading, user, importing])
 
+  // Auto-cleanup duplicates continuously until none remain
+  useEffect(() => {
+    const autoCleanup = async () => {
+      if (!user || !isAdmin || loading || importing || kpis.length === 0) return
+
+      // Detect duplicates by grouping by name + category
+      const kpiMap = new Map<string, KPI[]>()
+      kpis.forEach(kpi => {
+        const key = `${kpi.category}|||${kpi.name}`
+        if (!kpiMap.has(key)) {
+          kpiMap.set(key, [])
+        }
+        kpiMap.get(key)!.push(kpi)
+      })
+
+      // Check if there are any duplicates
+      const duplicateGroups = Array.from(kpiMap.values()).filter(group => group.length > 1)
+
+      if (duplicateGroups.length > 0) {
+        // Count total duplicates
+        const totalDuplicates = duplicateGroups.reduce((sum, group) => sum + (group.length - 1), 0)
+
+        logger.log(`🧹 Auto-cleaning ${totalDuplicates} duplicate${totalDuplicates !== 1 ? 's' : ''} detected in Firestore...`)
+        setImporting(true)
+
+        try {
+          let deleted = 0
+          for (const duplicates of duplicateGroups) {
+            // Sort by updatedAt desc, keep the most recent
+            duplicates.sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
+            const toDelete = duplicates.slice(1)
+
+            // Delete older duplicates
+            for (const dup of toDelete) {
+              logger.log(`Deleting duplicate: ${dup.name} (${dup.id})`)
+              await kpiService.deleteKPI(dup.id)
+              deleted++
+            }
+          }
+
+          logger.log(`✅ Auto-cleanup iteration complete! Deleted ${deleted} duplicate${deleted !== 1 ? 's' : ''}`)
+        } catch (error) {
+          logger.error('Auto-cleanup failed:', error)
+        } finally {
+          setImporting(false)
+        }
+      } else {
+        // No more duplicates - we're clean!
+        logger.log('✨ No duplicates found - database is clean!')
+      }
+    }
+
+    autoCleanup()
+  }, [kpis, loading, user, isAdmin, importing])
+
   const handleLogout = async () => {
     try {
       await logout()
       navigate('/login')
     } catch (error) {
-      console.error('Failed to log out:', error)
+      logger.error('Failed to log out:', error)
     }
   }
 
@@ -111,28 +182,35 @@ export default function KPITracker() {
   const handleUpdateField = async (kpiId: string, field: string, value: any) => {
     if (!user) return
 
+    logger.log('🔵 handleUpdateField called:', { kpiId, field, value })
+
     try {
       // Find the KPI to get old value and metadata
       const kpi = mergedKPIs.find(k => k.id === kpiId)
-      if (!kpi) return
+      if (!kpi) {
+        logger.error('❌ KPI not found:', kpiId)
+        return
+      }
 
       const oldValue = (kpi as any)[field] || ''
+      logger.log('📊 Current KPI:', { id: kpi.id, name: kpi.name, oldValue, newValue: value })
 
       // Check if this is a temporary ID (from initial data)
       if (kpiId.startsWith('initial-')) {
+        logger.warn('⚠️ Temporary ID detected - this should not happen after import!')
         // Find the initial KPI data
         const index = parseInt(kpiId.replace('initial-', ''))
         const initialKPI = initialKPIs[index]
 
         if (initialKPI) {
-          console.log('Creating new KPI in Firestore with updated field:', field, value)
+          logger.log('Creating new KPI in Firestore with updated field:', field, value)
           // Create a new KPI in Firestore with the updated field
           const newKPI: KPIInput = {
             ...initialKPI,
             [field]: value,
           }
           const newId = await kpiService.createKPI(user.uid, newKPI)
-          console.log('Created KPI with ID:', newId)
+          logger.log('✅ Created KPI with ID:', newId)
 
           // Log the change to audit trail
           await auditService.logChange({
@@ -150,9 +228,9 @@ export default function KPITracker() {
         }
       } else {
         // Update existing KPI in Firestore
-        console.log('Updating existing KPI:', kpiId, field, value)
+        logger.log('🔄 Updating existing KPI:', kpiId, field, value)
         await kpiService.updateKPI(kpiId, { [field]: value } as Partial<KPIInput>)
-        console.log('Update successful')
+        logger.log('✅ Update successful for field:', field, '=', value)
 
         // Log the change to audit trail
         await auditService.logChange({
@@ -167,9 +245,10 @@ export default function KPITracker() {
           changedByName: getTeamMemberName(user.email || ''),
           changeType: 'update',
         })
+        logger.log('✅ Audit log created')
       }
     } catch (error) {
-      console.error('Error updating field:', error)
+      logger.error('❌ Error updating field:', error)
       alert('Failed to update. Please check console for errors.')
     }
   }
@@ -186,11 +265,108 @@ export default function KPITracker() {
       const result = await importInitialKPIs(user.uid)
       alert(`Import complete!\n\nSuccessful: ${result.success}\nSkipped (already exist): ${result.skipped}\nFailed: ${result.failed}\n\n${result.success > 0 ? 'You can now edit the imported KPIs and changes will persist!' : result.skipped > 0 ? 'All KPIs already exist in database. You can edit them now!' : ''}`)
       if (result.errors.length > 0) {
-        console.error('Import errors:', result.errors)
+        logger.error('Import errors:', result.errors)
       }
     } catch (error) {
-      console.error('Import failed:', error)
+      logger.error('Import failed:', error)
       alert('Import failed. Check console for details.')
+    } finally {
+      setImporting(false)
+    }
+  }
+
+  const handleCleanupDuplicates = async () => {
+    if (!user || !isAdmin) return
+
+    if (!confirm('⚠️ This will delete duplicate KPIs from Firestore, keeping only the most recent version of each. Continue?')) {
+      return
+    }
+
+    setImporting(true)
+    try {
+      const kpiMap = new Map<string, KPI[]>()
+
+      // Group KPIs by name + category
+      kpis.forEach(kpi => {
+        const key = `${kpi.category}|||${kpi.name}`
+        if (!kpiMap.has(key)) {
+          kpiMap.set(key, [])
+        }
+        kpiMap.get(key)!.push(kpi)
+      })
+
+      let deleted = 0
+      let kept = 0
+
+      // For each group, keep the most recent and delete others
+      for (const [, duplicates] of kpiMap.entries()) {
+        if (duplicates.length > 1) {
+          // Sort by updatedAt desc, keep the first (most recent)
+          duplicates.sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
+          const toKeep = duplicates[0]
+          const toDelete = duplicates.slice(1)
+
+          logger.log(`Keeping most recent: ${toKeep.name} (${toKeep.id})`)
+          kept++
+
+          // Delete the older duplicates
+          for (const dup of toDelete) {
+            logger.log(`Deleting duplicate: ${dup.name} (${dup.id})`)
+            await kpiService.deleteKPI(dup.id)
+            deleted++
+          }
+        } else {
+          kept++
+        }
+      }
+
+      alert(`Cleanup complete!\n\nKept: ${kept} KPIs\nDeleted: ${deleted} duplicates`)
+    } catch (error) {
+      logger.error('Cleanup failed:', error)
+      alert('Cleanup failed. Check console for details.')
+    } finally {
+      setImporting(false)
+    }
+  }
+
+  const handleResetDatabase = async () => {
+    if (!user || !isAdmin) return
+
+    if (!confirm('⚠️⚠️⚠️ WARNING: This will DELETE ALL KPIs from Firestore and re-import fresh data from initialKPIs.ts. All custom changes will be lost! Continue?')) {
+      return
+    }
+
+    if (!confirm('Are you ABSOLUTELY sure? This cannot be undone!')) {
+      return
+    }
+
+    setImporting(true)
+    try {
+      logger.log('🗑️ Deleting all KPIs from Firestore...')
+
+      // Delete all KPIs
+      const deleteCount = kpis.length
+      for (const kpi of kpis) {
+        logger.log(`Deleting: ${kpi.name} (${kpi.id})`)
+        await kpiService.deleteKPI(kpi.id)
+      }
+
+      logger.log('✅ All KPIs deleted. Waiting for Firestore to sync...')
+
+      // Wait longer for Firestore to fully process deletions
+      await new Promise(resolve => setTimeout(resolve, 3000))
+
+      logger.log('📥 Re-importing fresh data...')
+
+      // Re-import fresh data
+      const result = await importInitialKPIs(user.uid)
+
+      logger.log('✅ Import complete. Please refresh the page.')
+
+      alert(`Database reset complete!\n\n✅ Deleted: ${deleteCount} KPIs\n✅ Imported: ${result.success} fresh KPIs\n❌ Failed: ${result.failed}\n\n🔄 Please REFRESH the page now (F5 or Ctrl+R)`)
+    } catch (error) {
+      logger.error('Reset failed:', error)
+      alert('Reset failed. Check console for details.')
     } finally {
       setImporting(false)
     }
@@ -198,7 +374,7 @@ export default function KPITracker() {
 
   // Merge initial KPIs with Firestore data
   // Always show initial KPIs, but use Firestore data if it exists for that KPI
-  const mergedKPIs: KPI[] = initialKPIs.map((initialKPI, index) => {
+  const mergedKPIsRaw: KPI[] = initialKPIs.map((initialKPI, index) => {
     // Try to find matching KPI in Firestore by name and category
     const firestoreKPI = kpis.find(
       (k) => k.name === initialKPI.name && k.category === initialKPI.category
@@ -218,6 +394,31 @@ export default function KPITracker() {
       } as KPI
     }
   })
+
+  // Remove any duplicates by ID (in case Firestore real-time sync creates temporary dupes)
+  const seenIds = new Set<string>()
+  const mergedKPIs = mergedKPIsRaw.filter(kpi => {
+    if (seenIds.has(kpi.id)) {
+      return false
+    }
+    seenIds.add(kpi.id)
+    return true
+  })
+
+  // Log merged KPIs info
+  useEffect(() => {
+    const tempCount = mergedKPIs.filter(k => k.id.startsWith('initial-')).length
+    const firestoreCount = mergedKPIs.filter(k => !k.id.startsWith('initial-')).length
+    logger.log('📋 Merged KPIs:', {
+      total: mergedKPIs.length,
+      fromFirestore: firestoreCount,
+      temporary: tempCount,
+      firestoreKPIsInState: kpis.length
+    })
+    if (tempCount > 0) {
+      logger.warn('⚠️ WARNING: Some KPIs still have temporary IDs! Click "Import Data" button.')
+    }
+  }, [mergedKPIs.length, kpis.length])
 
   // Enhanced filtering logic
   const filteredKPIs = mergedKPIs.filter((kpi) => {
@@ -574,6 +775,28 @@ export default function KPITracker() {
                   <Upload className="w-4 h-4" />
                   {importing ? 'Importing...' : 'Import Data'}
                 </motion.button>
+                {kpis.length > initialKPIs.length && (
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={handleCleanupDuplicates}
+                    disabled={importing}
+                    className="px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-lg hover:from-orange-600 hover:to-red-700 transition shadow-md flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <X className="w-4 h-4" />
+                    Cleanup Duplicates ({kpis.length - initialKPIs.length})
+                  </motion.button>
+                )}
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleResetDatabase}
+                  disabled={importing}
+                  className="px-4 py-2 bg-gradient-to-r from-red-600 to-red-800 text-white rounded-lg hover:from-red-700 hover:to-red-900 transition shadow-md flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <X className="w-4 h-4" />
+                  Reset DB
+                </motion.button>
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -876,7 +1099,7 @@ export default function KPITracker() {
               </thead>
               <tbody>
                 {Object.entries(groupedKPIs).map(([category, categoryKPIs]) => (
-                  <>
+                  <React.Fragment key={category}>
                     {/* Category Header */}
                     <tr key={`category-${category}`}>
                       <td colSpan={11} className="border border-slate-400 p-2 font-bold text-left text-white" style={{ background: 'linear-gradient(135deg, #64748b 0%, #94a3b8 100%)' }}>
@@ -895,7 +1118,8 @@ export default function KPITracker() {
                           <EditableCell
                             value={kpi.name}
                             onSave={(v) => handleUpdateField(kpi.id, 'name', v)}
-                            editable={isAdmin}
+                            editable={isAdmin || editableColumns.includes('name' as ColumnName)}
+                            showLockIcon={!isAdmin && !editableColumns.includes('name' as ColumnName)}
                           />
                         </td>
                         <td className="border border-slate-300 p-1">
@@ -904,7 +1128,8 @@ export default function KPITracker() {
                             onSave={(v) => handleUpdateField(kpi.id, 'signoffStatus', v)}
                             type="select"
                             options={['Pending', 'Submitted', 'Approved']}
-                            editable={isAdmin}
+                            editable={isAdmin || editableColumns.includes('signoffStatus' as ColumnName)}
+                            showLockIcon={!isAdmin && !editableColumns.includes('signoffStatus' as ColumnName)}
                           />
                         </td>
                         <td className="border border-slate-300 p-1">
@@ -933,7 +1158,8 @@ export default function KPITracker() {
                               'Hussein Srour - Project Governance',
                               'Mauro Scarpa - Project Director',
                             ]}
-                            editable={isAdmin}
+                            editable={isAdmin || editableColumns.includes('owner' as ColumnName)}
+                            showLockIcon={!isAdmin && !editableColumns.includes('owner' as ColumnName)}
                           />
                         </td>
                         <td className={`border border-slate-300 p-1 ${getCellBgColor(kpi.devStatus, 'devStatus')}`}>
@@ -943,14 +1169,16 @@ export default function KPITracker() {
                             type="select"
                             options={['Not Started', 'In Progress', 'Ready for SIT', 'Ready for SIT - until Sep', 'Ready for SIT - may Failed', 'Completed', 'Onhold']}
                             bgColor={getCellBgColor(kpi.devStatus, 'devStatus')}
-                            editable={isAdmin}
+                            editable={isAdmin || editableColumns.includes('devStatus' as ColumnName)}
+                            showLockIcon={!isAdmin && !editableColumns.includes('devStatus' as ColumnName)}
                           />
                         </td>
                         <td className="border border-slate-300 p-1">
                           <EditableCell
                             value={kpi.remarks || ''}
                             onSave={(v) => handleUpdateField(kpi.id, 'remarks', v)}
-                            editable={isAdmin}
+                            editable={isAdmin || editableColumns.includes('remarks' as ColumnName)}
+                            showLockIcon={!isAdmin && !editableColumns.includes('remarks' as ColumnName)}
                           />
                         </td>
                         <td className={`border border-slate-300 p-1 ${getCellBgColor(kpi.customerDependencyStatus, 'customerDependency')}`}>
@@ -961,7 +1189,8 @@ export default function KPITracker() {
                             options={['None', 'PENDING CUSTOMER FOR DATA', 'Inprogress', 'Not Started', 'Done', 'Passed', 'Failed', 'Dev Pending - Lawrance', 'Dependent on revisions', 'Dependent on VAT']}
                             bgColor={getCellBgColor(kpi.customerDependencyStatus, 'customerDependency')}
                             textColor={kpi.customerDependencyStatus?.includes('PENDING') ? 'text-white' : 'text-slate-800'}
-                            editable={isAdmin}
+                            editable={isAdmin || editableColumns.includes('customerDependencyStatus' as ColumnName)}
+                            showLockIcon={!isAdmin && !editableColumns.includes('customerDependencyStatus' as ColumnName)}
                           />
                         </td>
                         <td className={`border border-slate-300 p-1 ${getCellBgColor(kpi.revisedDevStatus, 'revisedDevStatus')}`}>
@@ -971,7 +1200,8 @@ export default function KPITracker() {
                             type="select"
                             options={['Not Started', 'In Progress', 'Completed', 'Passed', 'Failed', 'Done', 'Onhold', '?']}
                             bgColor={getCellBgColor(kpi.revisedDevStatus, 'revisedDevStatus')}
-                            editable={isAdmin}
+                            editable={isAdmin || editableColumns.includes('revisedDevStatus' as ColumnName)}
+                            showLockIcon={!isAdmin && !editableColumns.includes('revisedDevStatus' as ColumnName)}
                           />
                         </td>
                         <td className={`border border-slate-300 p-1 ${getCellBgColor(kpi.sitStatus, 'sitStatus')}`}>
@@ -982,7 +1212,8 @@ export default function KPITracker() {
                             options={['Not Started', 'Pending', 'In Progress', 'Inprogress', 'Passed', 'Failed', 'Can we put in UAT?', 'Can we put in Prod?', 'Ready for SIT - until Sep', 'Ready for SIT - may Failed', 'PENDING CUSTOMER FOR DATA']}
                             bgColor={getCellBgColor(kpi.sitStatus, 'sitStatus')}
                             textColor={kpi.sitStatus?.includes('PENDING') ? 'text-white' : 'text-slate-800'}
-                            editable={isAdmin}
+                            editable={isAdmin || editableColumns.includes('sitStatus' as ColumnName)}
+                            showLockIcon={!isAdmin && !editableColumns.includes('sitStatus' as ColumnName)}
                           />
                         </td>
                         <td className={`border border-slate-300 p-1 ${getCellBgColor(kpi.uatStatus, 'uatStatus')}`}>
@@ -993,7 +1224,8 @@ export default function KPITracker() {
                             options={['Not Started', 'Pending', 'In Progress', 'Inprogress', 'Passed', 'Failed', 'Can we put in UAT?', 'Can we put in Prod?']}
                             bgColor={getCellBgColor(kpi.uatStatus, 'uatStatus')}
                             textColor={kpi.uatStatus?.includes('PENDING') ? 'text-white' : 'text-slate-800'}
-                            editable={isAdmin}
+                            editable={isAdmin || editableColumns.includes('uatStatus' as ColumnName)}
+                            showLockIcon={!isAdmin && !editableColumns.includes('uatStatus' as ColumnName)}
                           />
                         </td>
                         <td className={`border border-slate-300 p-1 ${getCellBgColor(kpi.prodStatus, 'prodStatus')}`}>
@@ -1004,12 +1236,13 @@ export default function KPITracker() {
                             options={['Not Started', 'Pending', 'In Progress', 'Inprogress', 'Passed', 'Failed', 'Can we put in UAT?', 'Can we put in Prod?']}
                             bgColor={getCellBgColor(kpi.prodStatus, 'prodStatus')}
                             textColor={kpi.prodStatus?.includes('PENDING') ? 'text-white' : 'text-slate-800'}
-                            editable={isAdmin}
+                            editable={isAdmin || editableColumns.includes('prodStatus' as ColumnName)}
+                            showLockIcon={!isAdmin && !editableColumns.includes('prodStatus' as ColumnName)}
                           />
                         </td>
                       </tr>
                     ))}
-                  </>
+                  </React.Fragment>
                 ))}
               </tbody>
             </table>
