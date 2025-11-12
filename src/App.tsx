@@ -7,6 +7,7 @@ import TwoFactorPage from './pages/TwoFactorPage'
 import Dashboard from './pages/Dashboard'
 import AdminDashboard from './pages/AdminDashboard'
 import KPITracker from './pages/KPITracker'
+import DeliverablesTracker from './pages/DeliverablesTracker'
 import AuditLog from './pages/AuditLog'
 import PendingApprovalPage from './pages/PendingApprovalPage'
 import ErrorBoundary from './components/ErrorBoundary'
@@ -83,6 +84,14 @@ function App() {
               element={
                 <PrivateRoute>
                   <KPITracker />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/deliverables-tracker"
+              element={
+                <PrivateRoute>
+                  <DeliverablesTracker />
                 </PrivateRoute>
               }
             />

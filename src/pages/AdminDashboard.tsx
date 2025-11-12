@@ -17,7 +17,8 @@ import {
   Clock,
   XCircle,
   Mail,
-  Send
+  Send,
+  FileText
 } from 'lucide-react'
 import { taskService } from '../services/taskService'
 import { Task } from '../types/task'
@@ -248,6 +249,13 @@ export default function AdminDashboard() {
               >
                 <BarChart2 className="w-4 h-4" />
                 KPI Tracker
+              </Link>
+              <Link
+                to="/deliverables-tracker"
+                className="flex items-center gap-2 px-4 py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded-lg transition font-medium text-sm"
+              >
+                <FileText className="w-4 h-4" />
+                Deliverables
               </Link>
               <div className="flex items-center gap-3 px-4 py-2 glass-morphism rounded-lg">
                 <Shield className="w-5 h-5 text-orange-600" />
