@@ -293,12 +293,52 @@ export const getAllUsers = async (): Promise<UserProfile[]> => {
         rejectedAt: data.rejectedAt?.toDate(),
         createdAt: data.createdAt.toDate(),
         lastLoginAt: data.lastLoginAt?.toDate(),
+        twoFactorEnabled: data.twoFactorEnabled,
       }
     })
   } catch (error) {
     logger.error('Error fetching all users:', error)
     return []
   }
+}
+
+/**
+ * Subscribe to all users in real-time (admin only)
+ */
+export const subscribeToAllUsers = (
+  callback: (users: UserProfile[]) => void,
+  onError?: (error: Error) => void
+) => {
+  const q = query(collection(db, USERS_COLLECTION))
+
+  return onSnapshot(
+    q,
+    (snapshot) => {
+      const users: UserProfile[] = snapshot.docs.map((doc) => {
+        const data = doc.data()
+        return {
+          uid: doc.id,
+          email: data.email,
+          displayName: data.displayName,
+          emailVerified: data.emailVerified,
+          approvalStatus: data.approvalStatus,
+          domain: data.domain,
+          approvedBy: data.approvedBy,
+          approvedAt: data.approvedAt?.toDate(),
+          rejectedBy: data.rejectedBy,
+          rejectedAt: data.rejectedAt?.toDate(),
+          createdAt: data.createdAt.toDate(),
+          lastLoginAt: data.lastLoginAt?.toDate(),
+          twoFactorEnabled: data.twoFactorEnabled,
+        }
+      })
+      callback(users)
+    },
+    (error) => {
+      logger.error('Error in all users subscription:', error)
+      onError?.(error as Error)
+    }
+  )
 }
 
 /**
@@ -345,4 +385,34 @@ export const getApprovalMessage = (profile: UserProfile | null): string => {
   }
 
   return 'Access granted'
+}
+
+/**
+ * Enable two-factor authentication for user
+ */
+export const enableTwoFactor = async (uid: string): Promise<void> => {
+  try {
+    await updateDoc(doc(db, USERS_COLLECTION, uid), {
+      twoFactorEnabled: true,
+    })
+    logger.log('2FA enabled for user:', uid)
+  } catch (error) {
+    logger.error('Error enabling 2FA:', error)
+    throw error
+  }
+}
+
+/**
+ * Disable two-factor authentication for user
+ */
+export const disableTwoFactor = async (uid: string): Promise<void> => {
+  try {
+    await updateDoc(doc(db, USERS_COLLECTION, uid), {
+      twoFactorEnabled: false,
+    })
+    logger.log('2FA disabled for user:', uid)
+  } catch (error) {
+    logger.error('Error disabling 2FA:', error)
+    throw error
+  }
 }

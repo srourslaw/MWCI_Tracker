@@ -18,6 +18,7 @@ import {
 import { taskService } from '../services/taskService'
 import { Task, TaskInput } from '../types/task'
 import TaskModal from '../components/TaskModal'
+import TwoFactorSettings from '../components/TwoFactorSettings'
 import { getTeamMemberName } from '../data/teamMembers'
 import { logger } from '../utils/logger'
 
@@ -268,6 +269,16 @@ export default function Dashboard() {
               )}
             </>
           )}
+        </motion.div>
+
+        {/* Security Settings Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="mt-8"
+        >
+          <TwoFactorSettings />
         </motion.div>
       </main>
 

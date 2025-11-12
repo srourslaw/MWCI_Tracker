@@ -19,6 +19,7 @@ export interface UserProfile {
   rejectedAt?: Date
   createdAt: Date
   lastLoginAt?: Date
+  twoFactorEnabled?: boolean // Whether 2FA is enabled for this user
 }
 
 export interface PendingApproval {

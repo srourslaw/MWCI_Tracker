@@ -24,7 +24,7 @@ import { getTeamMemberName, TEAM_MEMBERS } from '../data/teamMembers'
 import TeamDirectory from '../components/TeamDirectory'
 import ColumnPermissionsManager from '../components/ColumnPermissionsManager'
 import UserApprovalDashboard from '../components/UserApprovalDashboard'
-import { getAllUsers } from '../services/userService'
+import { subscribeToAllUsers } from '../services/userService'
 import { UserProfile } from '../types/user'
 import { logger } from '../utils/logger'
 
@@ -97,15 +97,20 @@ export default function AdminDashboard() {
     return () => unsubscribe()
   }, [])
 
-  // Fetch all registered users
+  // Subscribe to all registered users in real-time
   useEffect(() => {
-    const fetchUsers = async () => {
-      setLoadingUsers(true)
-      const users = await getAllUsers()
-      setAllUsers(users)
-      setLoadingUsers(false)
-    }
-    fetchUsers()
+    const unsubscribe = subscribeToAllUsers(
+      (users) => {
+        setAllUsers(users)
+        setLoadingUsers(false)
+      },
+      (error) => {
+        logger.error('Error loading users:', error)
+        setLoadingUsers(false)
+      }
+    )
+
+    return () => unsubscribe()
   }, [])
 
   const handleLogout = async () => {

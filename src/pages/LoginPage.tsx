@@ -3,6 +3,10 @@ import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { LogIn, Mail, Lock, AlertCircle } from 'lucide-react'
 import { motion } from 'framer-motion'
+import { getUserProfile } from '../services/userService'
+import { createTwoFactorCode, send2FACodeEmail } from '../services/twoFactorService'
+import { auth } from '../firebase'
+import { logger } from '../utils/logger'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -19,7 +23,32 @@ export default function LoginPage() {
 
     try {
       await login(email, password)
-      // Check if admin
+
+      // Check if user has 2FA enabled
+      const currentUser = auth.currentUser
+      if (currentUser) {
+        const userProfile = await getUserProfile(currentUser.uid)
+
+        if (userProfile?.twoFactorEnabled) {
+          // Generate and send 2FA code
+          const code = await createTwoFactorCode(currentUser.uid, email)
+          await send2FACodeEmail(email, code, userProfile.displayName || 'User')
+
+          logger.log('2FA required for user:', email)
+
+          // Navigate to 2FA verification page
+          navigate('/verify-2fa', {
+            state: {
+              email,
+              userId: currentUser.uid,
+              userName: userProfile.displayName,
+            },
+          })
+          return
+        }
+      }
+
+      // No 2FA required - redirect normally
       if (email === 'hussein.srour@thakralone.com') {
         navigate('/admin')
       } else {
