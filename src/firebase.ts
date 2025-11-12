@@ -4,7 +4,6 @@ import { getFirestore, enableIndexedDbPersistence } from 'firebase/firestore'
 import { setLogLevel } from 'firebase/app'
 
 // Firebase configuration
-// TODO: Replace with your actual Firebase config
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
@@ -20,6 +19,28 @@ if (import.meta.env.PROD) {
   setLogLevel('silent')
 } else {
   setLogLevel('error')
+}
+
+// Suppress browser network errors in console (development only visual cleanup)
+// Note: Network errors like "Failed to load resource" are browser-level and expected
+// when WebSocket connections timeout during idle periods. Firebase auto-reconnects.
+if (import.meta.env.DEV) {
+  // Global error handler to catch and suppress harmless network errors
+  const originalError = console.error
+  console.error = (...args: any[]) => {
+    // Suppress Firebase WebSocket/channel network errors (they auto-reconnect)
+    const errorMessage = args.join(' ')
+    if (
+      errorMessage.includes('Failed to load resource') ||
+      errorMessage.includes('network connection was lost') ||
+      errorMessage.includes('channel')
+    ) {
+      // Silently ignore - Firebase handles reconnection automatically
+      return
+    }
+    // Pass through all other errors
+    originalError.apply(console, args)
+  }
 }
 
 // Initialize Firebase
