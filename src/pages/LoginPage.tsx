@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
-import { LogIn, Mail, Lock, AlertCircle, CheckCircle } from 'lucide-react'
+import { LogIn, Mail, Lock, AlertCircle, CheckCircle, Send } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { getUserProfile } from '../services/userService'
 import { createTwoFactorCode, send2FACodeEmail } from '../services/twoFactorService'
+import { sendEmailVerification } from 'firebase/auth'
 import { auth } from '../firebase'
 import { logger } from '../utils/logger'
 
@@ -14,30 +15,56 @@ export default function LoginPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [verificationSuccess, setVerificationSuccess] = useState(false)
-  const { login, user } = useAuth()
+  const [sendingTestEmail, setSendingTestEmail] = useState(false)
+  const [testEmailSent, setTestEmailSent] = useState(false)
+  const { login } = useAuth()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
 
-  // Check if user just verified their email
+  // Check if user just verified their email and force reload auth state
   useEffect(() => {
     const verified = searchParams.get('verified')
     if (verified === 'true') {
       setVerificationSuccess(true)
-      logger.log('User returned from email verification')
+      logger.log('🔄 User returned from email verification link')
 
-      // If user is already logged in and verified, auto-redirect
-      if (user && auth.currentUser?.emailVerified) {
-        logger.log('User verified and logged in, redirecting to dashboard...')
-        setTimeout(() => {
-          if (user.email === 'hussein.srour@thakralone.com') {
-            navigate('/admin')
-          } else {
-            navigate('/dashboard')
+      // Force reload current user to get latest verification status
+      const checkAndRedirect = async () => {
+        if (auth.currentUser) {
+          logger.log('👤 User is logged in, reloading auth state...')
+          try {
+            // Force reload to get latest emailVerified status from Firebase
+            await auth.currentUser.reload()
+            logger.log('✅ Auth state reloaded')
+
+            // Check if now verified
+            if (auth.currentUser.emailVerified) {
+              logger.log('✨ Email is now verified! Redirecting to dashboard...')
+
+              // Wait 2 seconds to show success message, then redirect
+              setTimeout(() => {
+                if (auth.currentUser?.email === 'hussein.srour@thakralone.com') {
+                  logger.log('🔐 Admin user detected, redirecting to /admin')
+                  navigate('/admin')
+                } else {
+                  logger.log('👥 Regular user, redirecting to /dashboard')
+                  navigate('/dashboard')
+                }
+              }, 2000)
+            } else {
+              logger.log('⚠️ Email still not verified after reload')
+            }
+          } catch (error) {
+            logger.error('❌ Error reloading user:', error)
           }
-        }, 2000) // Give user 2 seconds to see the success message
+        } else {
+          logger.log('👻 No user logged in, user needs to sign in first')
+        }
       }
+
+      checkAndRedirect()
     }
-  }, [searchParams, user, navigate])
+  }, [searchParams, navigate])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -81,6 +108,36 @@ export default function LoginPage() {
       setError(err.message || 'Failed to sign in')
     } finally {
       setLoading(false)
+    }
+  }
+
+  // Test helper function to send verification email to currently logged in user
+  const handleSendTestVerificationEmail = async () => {
+    if (!auth.currentUser) {
+      alert('Please sign in first to test verification emails')
+      return
+    }
+
+    setSendingTestEmail(true)
+    setTestEmailSent(false)
+
+    try {
+      const actionCodeSettings = {
+        url: window.location.origin + '/login?verified=true',
+        handleCodeInApp: false,
+      }
+      await sendEmailVerification(auth.currentUser, actionCodeSettings)
+      setTestEmailSent(true)
+      logger.log('📧 Test verification email sent to:', auth.currentUser.email)
+
+      setTimeout(() => {
+        setTestEmailSent(false)
+      }, 5000)
+    } catch (error: any) {
+      logger.error('Failed to send test email:', error)
+      alert('Failed to send test email: ' + error.message)
+    } finally {
+      setSendingTestEmail(false)
     }
   }
 
@@ -131,11 +188,18 @@ export default function LoginPage() {
               className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center gap-3 text-green-700"
             >
               <CheckCircle className="w-5 h-5 flex-shrink-0" />
-              <div>
+              <div className="flex-1">
                 <p className="font-semibold">Email Verified Successfully!</p>
-                <p className="text-sm text-green-600 mt-1">
-                  {user ? 'Redirecting you to your dashboard...' : 'You can now sign in with your account.'}
-                </p>
+                {auth.currentUser ? (
+                  <div className="text-sm text-green-600 mt-1">
+                    <p>Account: <span className="font-medium">{auth.currentUser.email}</span></p>
+                    <p className="mt-1">✨ Redirecting you to your dashboard...</p>
+                  </div>
+                ) : (
+                  <p className="text-sm text-green-600 mt-1">
+                    You can now sign in with your account.
+                  </p>
+                )}
               </div>
             </motion.div>
           )}
@@ -208,6 +272,37 @@ export default function LoginPage() {
               </Link>
             </p>
           </div>
+
+          {/* Test Helper - Only show if user is logged in */}
+          {auth.currentUser && (
+            <div className="mt-6 pt-6 border-t border-slate-200">
+              <p className="text-xs text-slate-500 text-center mb-3">
+                🧪 Test Helper (logged in as: {auth.currentUser.email})
+              </p>
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handleSendTestVerificationEmail}
+                disabled={sendingTestEmail}
+                className="w-full py-2 px-4 bg-gradient-to-r from-purple-500 to-indigo-600 text-white text-sm font-semibold rounded-lg hover:from-purple-600 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition shadow-md flex items-center justify-center gap-2"
+              >
+                <Send className="w-4 h-4" />
+                {sendingTestEmail ? 'Sending...' : 'Send Test Verification Email'}
+              </motion.button>
+              {testEmailSent && (
+                <motion.p
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-xs text-green-600 text-center mt-2"
+                >
+                  ✅ Test email sent! Check your inbox and click the verification link.
+                </motion.p>
+              )}
+              <p className="text-xs text-slate-400 text-center mt-2">
+                This will send a verification email with the auto-redirect configured.
+              </p>
+            </div>
+          )}
         </motion.div>
       </motion.div>
 
